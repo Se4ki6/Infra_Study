@@ -1,0 +1,14 @@
+# cp terraform.tfvars.example terraform.tfvars して値を埋める
+
+name_prefix = "s3oidc"
+environment = "study"
+location    = "japaneast"
+
+entra_app_display_name = "s3-oidc-azurefunction"
+
+aws_region    = "ap-northeast-1"
+aws_s3_bucket = "s3-oidc-azurefunction-CHANGEME" # terraform/aws の bucket_name と同じ値
+
+# 1回目のapplyでは空文字のままでよい。
+# terraform/aws apply後に出力される web_identity_role_arn を入れて再applyする。
+aws_web_identity_role_arn = ""

@@ -1,0 +1,14 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+
+    "AWS_REGION": "ap-northeast-1",
+    "AWS_S3_BUCKET": "s3-oidc-azurefunction-CHANGEME",
+    "AWS_S3_PREFIX": "downloads",
+    "AWS_WEB_IDENTITY_ROLE_ARN": "arn:aws:iam::123456789012:role/s3-oidc-s3-access-oidc",
+    "AWS_STS_SESSION_DURATION_SECONDS": "3600",
+    "AZURE_TOKEN_SCOPE": "api://00000000-0000-0000-0000-000000000000/.default"
+  }
+}

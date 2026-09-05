@@ -1,0 +1,1 @@
+This is a sample file for verifying the OIDC federation flow between Azure Functions and Amazon S3.
