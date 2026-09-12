@@ -17,6 +17,13 @@ resource "azuread_application" "this" {
   api {
     requested_access_token_version = var.requested_access_token_version
   }
+
+  // identifier_urisはazuread_application_identifier_uriが専属で管理する。
+  // ここで無視しないと、無関係な変更のapplyのたびにこの属性が未設定(空)だと
+  // 判定されて上書きされ、下のリソースが設定したURIが消えてしまう。
+  lifecycle {
+    ignore_changes = [identifier_uris]
+  }
 }
 
 // identifier_uriは自分自身のclient_idを参照するため、

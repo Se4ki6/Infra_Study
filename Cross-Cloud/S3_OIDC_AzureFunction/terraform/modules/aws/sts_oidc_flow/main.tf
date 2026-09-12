@@ -13,19 +13,27 @@
 locals {
   // 信頼する issuer。トークンのバージョンで変わる。
   //
-  // ※ v1 トークンの iss は末尾スラッシュ付き ("https://sts.windows.net/<tenant>/") だが、
-  //    IAM の OIDC プロバイダ URL は末尾スラッシュなしで登録する（AWS 側で正規化される）。
-  issuer_url = var.azure_token_version == "v2" ? "https://login.microsoftonline.com/${var.azure_tenant_id}/v2.0" : "https://sts.windows.net/${var.azure_tenant_id}"
+  // ※ 重要: AWSのIAM OIDCプロバイダのURLは、トークンのissクレームと"完全一致"する必要があり、
+  //    AWS側で末尾スラッシュを正規化してくれるわけではない（ここでハマると
+  //    署名・証明書チェーン・サムプリントを何回変えても直らない InvalidIdentityToken になる）。
+  //    v1トークンのissは末尾スラッシュ付き ("https://sts.windows.net/<tenant>/")。
+  //    v2トークンのissは末尾スラッシュなし ("https://login.microsoftonline.com/<tenant>/v2.0")。
+  issuer_url = var.azure_token_version == "v2" ? "https://login.microsoftonline.com/${var.azure_tenant_id}/v2.0" : "https://sts.windows.net/${var.azure_tenant_id}/"
 
-  // 信頼ポリシーの条件キーは「スキームを除いた issuer」を接頭辞に使う
-  // 例: sts.windows.net/<tenant>:aud
+  // 信頼ポリシーの条件キーは「スキームを除いた issuer」をそのまま接頭辞に使う。
+  // AWSは条件キーをOIDCプロバイダの登録URL(スキームなし)そのものから組み立てるため、
+  // v1のように登録URLが末尾スラッシュ付きの場合はここも末尾スラッシュを残さないと
+  // 条件が永遠にマッチせず、トークン検証は通るのに AssumeRoleWithWebIdentity が
+  // AccessDenied になる（実機検証で確認済み。詳細: docs/troubleshooting-assumerole-accessdenied.md）。
+  // 例: sts.windows.net/<tenant>/:aud （v1。v2はissuer_url自体に末尾スラッシュがないので付かない）
   condition_prefix = replace(local.issuer_url, "https://", "")
 
-  discovery_url = "${local.issuer_url}/.well-known/openid-configuration"
+  discovery_url = "${trimsuffix(local.issuer_url, "/")}/.well-known/openid-configuration"
 }
 
 // Entra ID のサーバー証明書チェーンを取得する。
 // サムプリントをハードコードすると証明書更新のたびに壊れるため動的に解決する。
+// (証明書チェーンは末尾=ルート寄りのCA、先頭寄りとは限らないため長さに応じて末尾を使う)
 data "tls_certificate" "azure" {
   url = local.discovery_url
 }
@@ -36,9 +44,9 @@ resource "aws_iam_openid_connect_provider" "this" {
   // AWS はトークンの aud クレームがこのリストに含まれることを検証する
   client_id_list = [var.azure_oidc_audience]
 
-  // チェーンの末尾 = ルートCAのサムプリント
+  // AWSドキュメント推奨: 「上位の中間CA」のサムプリント = チェーンの先頭
   thumbprint_list = [
-    data.tls_certificate.azure.certificates[length(data.tls_certificate.azure.certificates) - 1].sha1_fingerprint
+    data.tls_certificate.azure.certificates[0].sha1_fingerprint
   ]
 
   tags = merge(var.tags, {

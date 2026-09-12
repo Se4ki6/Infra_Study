@@ -2,6 +2,8 @@
 
 > Azure Function（マネージドID）が、長期のAWS認証情報を一切使わずにS3のファイルをダウンロードする構成（OIDCフェデレーション）
 
+> OIDCフェデレーションの仕組み自体（JWT・信頼ポリシー・v1/v2トークンなど）が初めての場合は、先に [docs/identity/oidc-federation.md](../../docs/identity/oidc-federation.md) を読むと理解しやすい。
+
 ## Features
 
 - **AWS**: IAM OIDCプロバイダ（Entra IDを信頼）／AssumeRoleWithWebIdentity用のIAMロール／パブリックアクセスを無効化したS3バケット
@@ -27,6 +29,40 @@
  └─────────────────────────────┘                    │  (Public Access Block)    │
                                                      └──────────────────────────┘
 ```
+
+より詳細な流れ（信頼ポリシーの条件評価やJWKSでの署名検証まで含む）:
+
+```mermaid
+sequenceDiagram
+    participant MI as Managed Identity<br/>(Function App)
+    participant Entra as Entra ID
+    participant Fn as Azure Function<br/>(function_app.py)
+    participant STS as AWS STS
+    participant OIDC as IAM OIDC Provider<br/>(issuer: sts.windows.net/&lt;tenant&gt;/)
+    participant Role as IAM Role<br/>(trust policy: aud/sub条件)
+    participant S3 as S3 Bucket
+
+    Fn->>MI: トークン要求 (scope=api://<client-id>/.default)
+    MI->>Entra: マネージドID経由でトークン発行を要求
+    Entra-->>MI: JWT (iss, aud, sub を含む v1トークン)
+    MI-->>Fn: JWT
+
+    Fn->>STS: AssumeRoleWithWebIdentity(RoleArn, WebIdentityToken=JWT)<br/>※無署名で呼ぶ
+    STS->>OIDC: JWTの署名をJWKSの公開鍵で検証
+    OIDC-->>STS: 署名・iss・ClientIDList(aud)・サムプリント OK
+    STS->>Role: 信頼ポリシーのCondition(aud/sub)をJWTのクレームと照合
+    alt Conditionキーがプロバイダ登録URLと完全一致
+        Role-->>STS: Allow
+        STS-->>Fn: 一時クレデンシャル (AccessKey/SecretKey/SessionToken)
+        Fn->>S3: ListBucket / GetObject (一時クレデンシャルで署名)
+        S3-->>Fn: オブジェクト一覧 / オブジェクト本体
+    else 1文字でも不一致（例: 末尾スラッシュの有無）
+        Role-->>STS: 暗黙のDeny
+        STS-->>Fn: AccessDenied
+    end
+```
+
+信頼ポリシーのConditionキーの完全一致がどれだけシビアか（実際にハマった例）は [docs/troubleshooting-assumerole-accessdenied.md](./docs/troubleshooting-assumerole-accessdenied.md) を参照。
 
 詳細な手順は [docs/setup-guide.md](./docs/setup-guide.md) を参照。
 
@@ -86,7 +122,7 @@
    curl https://<function_app_name>.azurewebsites.net/api/download/hello.txt?code=<function-key>
    ```
 
-検証の詳細・トラブルシューティングは [docs/setup-guide.md](./docs/setup-guide.md) を参照。
+動作確認の詳細な手順は [docs/verification.md](./docs/verification.md)、トラブルシューティングは [docs/setup-guide.md](./docs/setup-guide.md) を参照。
 
 ## ディレクトリ構成
 

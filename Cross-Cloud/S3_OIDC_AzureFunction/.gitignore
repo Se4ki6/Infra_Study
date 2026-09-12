@@ -14,3 +14,7 @@ __pycache__/
 .venv/
 bin/
 obj/
+
+# 動作確認スクリプト（function-keyを含むため実体はコミットしない）
+scripts/verify.sh
+!scripts/verify.sh.example

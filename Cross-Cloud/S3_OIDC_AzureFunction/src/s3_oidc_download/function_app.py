@@ -18,6 +18,8 @@ import azure.functions as func
 import boto3
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import ManagedIdentityCredential
+from botocore import UNSIGNED
+from botocore.config import Config
 from botocore.exceptions import ClientError
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
@@ -40,8 +42,18 @@ def _decode_jwt_claims(jwt: str) -> dict:
 
 
 def _assume_role_with_web_identity(jwt: str) -> dict:
-    """JWTを使ってAWS STSから一時クレデンシャルを取得する。"""
-    sts = boto3.client("sts", region_name=os.environ["AWS_REGION"])
+    """JWTを使ってAWS STSから一時クレデンシャルを取得する。
+
+    AssumeRoleWithWebIdentityは長期のAWS認証情報を持たない呼び出し元のためのAPIであり、
+    本来無署名で呼ぶべきもの。boto3のデフォルト認証情報チェーンが環境内の何かを
+    拾って署名してしまうと、その署名者自身の権限で拒否されうる(実際にNot authorized
+    to perform sts:AssumeRoleWithWebIdentityで嵌った)ため、明示的に無署名を指定する。
+    """
+    sts = boto3.client(
+        "sts",
+        region_name=os.environ["AWS_REGION"],
+        config=Config(signature_version=UNSIGNED),
+    )
     response = sts.assume_role_with_web_identity(
         RoleArn=os.environ["AWS_WEB_IDENTITY_ROLE_ARN"],
         RoleSessionName="azure-function-oidc",
@@ -83,9 +95,9 @@ def token_claims(req: func.HttpRequest) -> func.HttpResponse:
             "appid": claims.get("appid") or claims.get("azp"),
         }
         return func.HttpResponse(json.dumps(body, ensure_ascii=False), mimetype="application/json")
-    except ClientAuthenticationError:
+    except ClientAuthenticationError as e:
         logging.exception("failed to acquire token from Entra ID")
-        return func.HttpResponse("failed to acquire token from Entra ID", status_code=500)
+        return func.HttpResponse(f"failed to acquire token from Entra ID: {e}", status_code=500)
 
 
 @app.route(route="files", methods=["GET"])
@@ -97,7 +109,10 @@ def list_files(req: func.HttpRequest) -> func.HttpResponse:
         s3 = _s3_client(credentials)
 
         prefix = os.environ.get("AWS_S3_PREFIX", "")
-        response = s3.list_objects_v2(Bucket=os.environ["AWS_S3_BUCKET"], Prefix=prefix)
+        # IAMポリシー(s3-oidc-s3-read)はs3:prefix条件を"downloads/*"で評価するため、
+        # 末尾スラッシュなしのAWS_S3_PREFIX("downloads")に対してここでスラッシュを補う。
+        list_prefix = f"{prefix}/" if prefix else ""
+        response = s3.list_objects_v2(Bucket=os.environ["AWS_S3_BUCKET"], Prefix=list_prefix)
         keys = [obj["Key"] for obj in response.get("Contents", [])]
         return func.HttpResponse(json.dumps(keys, ensure_ascii=False), mimetype="application/json")
     except ClientError:

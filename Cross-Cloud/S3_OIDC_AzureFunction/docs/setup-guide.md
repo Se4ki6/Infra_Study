@@ -46,6 +46,7 @@ cp terraform.tfvars.example terraform.tfvars
 # name_prefix, location, aws_region, aws_s3_bucket を編集
 # aws_web_identity_role_arn はこの時点では "" のまま
 terraform init
+terraform plan
 terraform apply
 ```
 
@@ -88,6 +89,8 @@ func azure functionapp publish $(terraform -chdir=../../terraform/azure output -
 ```
 
 ## 検証
+
+より詳しい・段階を追った確認手順は [docs/verification.md](./verification.md) を参照。ここでは要点のみ。
 
 ### トークンの中身を確認する（重要）
 
@@ -134,11 +137,13 @@ aws s3api get-object --bucket <bucket_name> --key downloads/hello.txt out.txt
 
 ## トラブルシューティング
 
-| 症状 | 原因の候補 |
-|---|---|
+| 症状                                       | 原因の候補                                                                    |
+| ------------------------------------------ | ----------------------------------------------------------------------------- |
 | `AccessDenied` (AssumeRoleWithWebIdentity) | `aud`/`sub` の不一致。`/api/token-claims` の実測値とAWS側の変数を突き合わせる |
-| `InvalidIdentityToken` | OIDCプロバイダのURLとトークンの `iss` が食い違っている（v1/v2の取り違え） |
-| Function起動時に認証情報が取得できない | マネージドIDが有効化される前にデプロイした場合、反映まで数分かかることがある |
-| `AWS_WEB_IDENTITY_ROLE_ARN` が空のまま | 手順3（Azure側2回目のapply）を実行し忘れている |
+| `InvalidIdentityToken`                     | OIDCプロバイダのURLとトークンの `iss` が食い違っている（v1/v2の取り違え）     |
+| Function起動時に認証情報が取得できない     | マネージドIDが有効化される前にデプロイした場合、反映まで数分かかることがある  |
+| `AWS_WEB_IDENTITY_ROLE_ARN` が空のまま     | 手順3（Azure側2回目のapply）を実行し忘れている                                |
 
 Application Insights（Function Appの「監視」→「ログ」）で、STS呼び出し時の例外スタックトレースを確認できる。
+
+`AccessDenied`が`aud`/`sub`を突き合わせても直らない場合は、[docs/troubleshooting-assumerole-accessdenied.md](./troubleshooting-assumerole-accessdenied.md)にこれまでの詳しい調査記録がある。
