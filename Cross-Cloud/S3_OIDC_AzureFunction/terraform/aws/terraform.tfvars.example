@@ -1,0 +1,14 @@
+# cp terraform.tfvars.example terraform.tfvars して値を埋める
+
+name_prefix = "s3-oidc"
+environment = "study"
+aws_region  = "ap-northeast-1"
+
+# グローバルで一意な名前にすること
+bucket_name    = "s3-oidc-azurefunction-CHANGEME"
+allowed_prefix = "downloads"
+
+# --- ここから terraform/azure を一度 apply してから埋める値 ---
+azure_tenant_id              = "00000000-0000-0000-0000-000000000000"
+azure_oidc_audience          = "api://00000000-0000-0000-0000-000000000000" # entra_app_identifier_uri の出力値
+azure_function_principal_id  = "00000000-0000-0000-0000-000000000000"       # function_app_principal_id の出力値

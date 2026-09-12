@@ -1,0 +1,20 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!terraform.tfvars.example
+crash.log
+crash.*.log
+
+# Azure Functions / Python
+**/local.settings.json
+__pycache__/
+*.pyc
+.venv/
+bin/
+obj/
+
+# 動作確認スクリプト（function-keyを含むため実体はコミットしない）
+scripts/verify.sh
+!scripts/verify.sh.example

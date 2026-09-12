@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# 動作確認スクリプト（テンプレート）
+#
+# 使い方:
+#   cp scripts/verify.sh.example scripts/verify.sh
+#   scripts/verify.sh の FUNCTION_CODE と AWS_PROFILE を埋める
+#   ./scripts/verify.sh
+#
+# docs/verification.md の手順1〜3・6を自動実行する。
+# 手順4（生トークンでのAssumeRoleWithWebIdentity直接切り分け）・5（terraform plan差分確認）は
+# 対話的な判断が必要なため、このスクリプトには含めていない。docs/verification.md を参照。
+#
+# 実際の値が入った scripts/verify.sh は .gitignore 対象。このテンプレートのみをコミットする。
+
+set -euo pipefail
+
+# ── 設定 ──────────────────────────────────────────────
+FUNCTION_CODE="<function-key>"   # Azure Portal or `az functionapp keys list` で確認
+AWS_PROFILE="<aws-profile-name>" # 手順6のS3確認に使うプロファイル
+# ──────────────────────────────────────────────────────
+
+cd "$(dirname "$0")/.."
+
+FUNC_NAME=$(terraform -chdir=terraform/azure output -raw function_app_name)
+FUNC_URL="https://${FUNC_NAME}.azurewebsites.net"
+BUCKET_NAME=$(terraform -chdir=terraform/aws output -raw s3_bucket_name)
+
+pass() { echo "  OK: $1"; }
+fail() { echo "  NG: $1"; exit 1; }
+
+echo "== 1. トークンの中身を確認する (token-claims) =="
+claims=$(curl -sf "$FUNC_URL/api/token-claims?code=$FUNCTION_CODE") || fail "token-claims の呼び出しに失敗（マネージドID/Entra App設定を確認）"
+echo "$claims"
+pass "token-claims"
+
+echo "== 2. ファイル一覧取得 (AssumeRoleWithWebIdentity + ListBucket) =="
+files_status=$(curl -s -o /tmp/verify_files.json -w "%{http_code}" "$FUNC_URL/api/files?code=$FUNCTION_CODE")
+if [ "$files_status" != "200" ]; then
+  fail "files が HTTP $files_status（AssumeRoleの信頼ポリシー、またはAWS_S3_PREFIXの設定を確認。docs/troubleshooting-assumerole-accessdenied.md 参照）"
+fi
+cat /tmp/verify_files.json
+pass "files (HTTP 200)"
+
+echo "== 3. ファイルダウンロード (GetObject) =="
+first_key=$(python3 -c "import json;print(json.load(open('/tmp/verify_files.json'))[0].split('/')[-1])" 2>/dev/null || echo "hello.txt")
+download_status=$(curl -s -o /tmp/verify_download.out -w "%{http_code}" "$FUNC_URL/api/download/${first_key}?code=$FUNCTION_CODE")
+if [ "$download_status" != "200" ]; then
+  fail "download が HTTP $download_status"
+fi
+pass "download (HTTP 200): $(wc -c < /tmp/verify_download.out) bytes"
+
+echo "== 6. S3パブリックアクセスが無効になっていることの確認 =="
+block=$(AWS_PROFILE="$AWS_PROFILE" aws s3api get-public-access-block --bucket "$BUCKET_NAME" \
+  --query 'PublicAccessBlockConfiguration' --output json)
+echo "$block"
+if echo "$block" | grep -q '"BlockPublicAcls": true' && echo "$block" | grep -q '"RestrictPublicBuckets": true'; then
+  pass "public access block"
+else
+  fail "パブリックアクセスブロックが期待通りに有効になっていない"
+fi
+
+echo
+echo "すべての自動チェックに成功。手順4・5は docs/verification.md を参照して手動で確認する。"
