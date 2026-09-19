@@ -1,0 +1,6 @@
+# cp terraform.tfvars.example terraform.tfvars して値を編集する
+# 全変数にdefaultがあるので、そのままapplyしてもよい
+
+name_prefix = "rescheck"
+environment = "study"
+location    = "japaneast"

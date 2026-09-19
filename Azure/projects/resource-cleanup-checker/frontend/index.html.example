@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azureリソース消し忘れチェッカー</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+  h1 { font-size: 1.4rem; }
+  button { font-size: 1rem; padding: 0.6rem 1.2rem; cursor: pointer; }
+  button:disabled { cursor: not-allowed; opacity: 0.6; }
+  #status { margin: 1rem 0; color: #555; }
+  #error { color: #b00020; }
+  table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+  th, td { border: 1px solid #ddd; padding: 0.4rem 0.6rem; text-align: left; font-size: 0.9rem; }
+  th { background: #f5f5f5; }
+</style>
+</head>
+<body>
+
+<h1>Azureリソース消し忘れチェッカー</h1>
+<p>ボタンを押すとサブスクリプション内の全リソースを確認します。</p>
+
+<button id="check-button" onclick="startCheck()">リソースを確認</button>
+<div id="status"></div>
+<div id="error"></div>
+<div id="result"></div>
+
+<!--
+  Function Keyを使う構成のため、この値はビルド時ではなくデプロイ後に手で埋める。
+  静的サイトの閲覧者からはこのキーが見える（view-source等）ので、
+  個人利用専用のページであることを前提にしている。
+-->
+<script>
+  const FUNCTION_BASE_URL = "https://CHANGEME.azurewebsites.net/api";
+  const FUNCTION_KEY = "CHANGEME";
+  const POLL_INTERVAL_MS = 3000;
+
+  const button = document.getElementById("check-button");
+  const statusEl = document.getElementById("status");
+  const errorEl = document.getElementById("error");
+  const resultEl = document.getElementById("result");
+
+  function withKey(path) {
+    return `${FUNCTION_BASE_URL}${path}${path.includes("?") ? "&" : "?"}code=${FUNCTION_KEY}`;
+  }
+
+  async function startCheck() {
+    button.disabled = true;
+    errorEl.textContent = "";
+    resultEl.innerHTML = "";
+    statusEl.textContent = "リクエスト送信中...";
+
+    try {
+      const res = await fetch(withKey("/enqueue-check"), { method: "POST" });
+      if (!res.ok) throw new Error(`enqueue-check failed: ${res.status}`);
+      const { job_id } = await res.json();
+      statusEl.textContent = `ジョブ投入完了 (job_id: ${job_id})。確認中...`;
+      poll(job_id);
+    } catch (e) {
+      errorEl.textContent = `エラー: ${e.message}`;
+      button.disabled = false;
+    }
+  }
+
+  async function poll(jobId) {
+    try {
+      const res = await fetch(withKey(`/get-status/${jobId}`));
+      if (!res.ok) throw new Error(`get-status failed: ${res.status}`);
+      const body = await res.json();
+
+      if (body.status === "completed") {
+        statusEl.textContent = `完了（${body.resourceCount}件、${body.completedAt}）`;
+        renderResources(body.resources);
+        button.disabled = false;
+        return;
+      }
+      if (body.status === "failed") {
+        errorEl.textContent = `確認に失敗しました: ${body.error}`;
+        statusEl.textContent = "";
+        button.disabled = false;
+        return;
+      }
+
+      statusEl.textContent = `状態: ${body.status}...`;
+      setTimeout(() => poll(jobId), POLL_INTERVAL_MS);
+    } catch (e) {
+      errorEl.textContent = `エラー: ${e.message}`;
+      button.disabled = false;
+    }
+  }
+
+  function renderResources(resources) {
+    if (!resources || resources.length === 0) {
+      resultEl.innerHTML = "<p>リソースは見つかりませんでした。</p>";
+      return;
+    }
+    const rows = resources
+      .map(
+        (r) => `<tr>
+          <td>${r.resourceGroup ?? ""}</td>
+          <td>${r.name ?? ""}</td>
+          <td>${r.type ?? ""}</td>
+          <td>${r.location ?? ""}</td>
+        </tr>`
+      )
+      .join("");
+    resultEl.innerHTML = `<table>
+      <thead><tr><th>リソースグループ</th><th>名前</th><th>種類</th><th>リージョン</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+</script>
+
+</body>
+</html>
