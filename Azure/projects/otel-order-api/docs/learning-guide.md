@@ -4,10 +4,11 @@
 
 ## まず全体像
 
-OpenTelemetry（OTel）は、アプリケーションの動作を計測するための共通のAPIとSDKです。このサンプルでは、計測したデータを次のどちらかへ送ります。
+OpenTelemetry（OTel）は、アプリケーションの動作を計測するための共通のAPIとSDKです。このサンプルでは、計測したデータを次のいずれかへ送ります。
 
 - `APPLICATIONINSIGHTS_CONNECTION_STRING`を設定した場合: Azure Monitor OpenTelemetry DistroがテレメトリをApplication Insightsへ送ります。
-- 未設定の場合: ローカル用Console Exporterがトレース・メトリクス・ログをターミナルに出します。
+- 接続文字列がなく`OTEL_EXPORTER_OTLP_ENDPOINT`を設定した場合: OTLP ExporterがAspire Dashboardなどへ送ります。`make dev`はこの設定を自動で渡します。
+- 両方未設定の場合: Console Exporterがトレース・メトリクス・ログをターミナルに出します。
 
 計測（instrumentation）と送信先（exporter）は別の役割です。たとえば注文処理のコードがActivityやログ、メトリクスを記録し、ExporterがそれをコンソールやApplication Insightsへ運びます。
 
@@ -21,7 +22,7 @@ HTTPリクエスト
     +-- BlobOrderRepository: Azure Blob SDKの依存関係スパン
     |
     v
-Console Exporter（ローカル）またはApplication Insights（Azure）
+Aspire Dashboard（ローカル）、Console Exporter、またはApplication Insights（Azure）
 ```
 
 ## 3つのシグナル
@@ -67,11 +68,11 @@ Console Exporter（ローカル）またはApplication Insights（Azure）
 
 ### Application Insightsがない場合
 
-ローカルモードではConsole Exporterを使い、HTTPリクエスト、Applicationの独自スパン、Azure SDKのActivity、ログ、メトリクスをターミナルへ出します。Azure SDKのActivitySource名は`Azure.*`の形式なので、ローカル側でその名前を購読しています。HTTP/RESTベースのAzure SDKトレースは標準で有効です。実験的なActivitySourceスイッチは一部の機能、特にService BusやEvent Hubsのメッセージトレースで必要になる場合があり、このBlobサンプルでは設定しません。
+`make dev`ではOTLP Exporterを使い、HTTPリクエスト、Applicationの独自スパン、Azure SDKのActivity、ログ、メトリクスをAspire Dashboardへ送ります。`make api`を両方の送信先設定なしで起動した場合はConsole Exporterを使い、同じ情報をターミナルへ出します。Azure SDKのActivitySource名は`Azure.*`の形式なので、ローカル側でその名前を購読しています。HTTP/RESTベースのAzure SDKトレースは標準で有効です。実験的なActivitySourceスイッチは一部の機能、特にService BusやEvent Hubsのメッセージトレースで必要になる場合があり、このBlobサンプルでは設定しません。
 
 ## 実行して観察する
 
-必要なツールや起動方法は[プロジェクトREADME](../README.md)を参照してください。AzuriteとAPIを起動したら、正常系とエラー系を1回ずつ試します。
+必要なツールや起動方法は[プロジェクトREADME](../README.md)を参照してください。`make dev`で起動したら、実行結果に表示されるログイン URL から[Aspire Dashboard](http://localhost:18888)を開いて正常系とエラー系を1回ずつ試します。
 
 ### 正常な注文
 

@@ -4,3 +4,4 @@ obj/
 .vscode/
 *.user
 appsettings.Local.json
+.otel-order-api.pid

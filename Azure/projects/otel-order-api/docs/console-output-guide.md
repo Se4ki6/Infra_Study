@@ -1,13 +1,13 @@
-# `make dev` のコンソール出力の読み方
+# Console Exporterの出力の読み方
 
 このガイドは、注文 API をローカルで動かしたときにターミナルへ出る文字を読むためのものです。OpenTelemetry（OTel）の基本的な仕組みは [初学者向けガイド](learning-guide.md)、計測しているコードの一覧は [実装ドキュメント](otel-order-api.md) を参照してください。
 
 ## まず何を見ればよいか
 
-プロジェクト直下で `make dev` を実行すると、Make が実行コマンドを表示し、Docker Compose が Azurite を起動し、その後 .NET が API を起動します。次の順で確認してください。
+プロジェクト直下で送信先の環境変数を設定せずに`make api`を実行すると、Console Exporterが有効になります。Azuriteが必要なら先に`docker compose up -d azurite`を実行してください。`make dev`はAspire Dashboardへ送るため、このガイドの形式では表示されません。次の順で確認してください。
 
-1. `Now listening on: http://localhost:5080` が出たら API は起動しています。ここに表示された URL が実際の待受先です。`make dev PORT=5081` ならポートは `5081` になります。
-2. `APPLICATIONINSIGHTS_CONNECTION_STRING is unset; telemetry will be printed locally.` が出たら、OTel のログ・トレース・メトリクスはこのターミナルに出ます。接続文字列を設定した場合は Azure Monitor / Application Insights に送る設定に切り替わります。
+1. `Now listening on: http://localhost:5080` が出たら API は起動しています。ここに表示された URL が実際の待受先です。`make api PORT=5081` ならポートは `5081` になります。
+2. `OTEL_EXPORTER_OTLP_ENDPOINT is unset; telemetry will be printed locally.` が出たら、OTel のログ・トレース・メトリクスはこのターミナルに出ます。`APPLICATIONINSIGHTS_CONNECTION_STRING`を設定した場合はAzure Monitor、`OTEL_EXPORTER_OTLP_ENDPOINT`を設定した場合はOTLPの送信先に切り替わります。
 3. 起動後、注文 API や Swagger UI を操作すると出力が増えます。何も操作していなくても、メトリクスの定期的な出力やホスティングのログが表示されることがあります。
 
 ログが多くても、最初から全行を読む必要はありません。`LogRecord`、`Activity`、`Metric Name` の目印で種類を分け、調べたい注文やリクエストに関係する行を探します。
@@ -94,4 +94,4 @@ curl -i http://localhost:5080/orders \
 | `Could not save order` / `Could not retrieve order` | Blob Storage 操作が失敗した。Azurite が起動しているか、接続設定を確認する。 |
 | `Status: Error` | その Activity がエラーとして記録された。対応するログと HTTP 応答を `TraceId` で確認する。 |
 
-`Ctrl+C` で API を止めた際にも、残りのメトリクスなどがまとめて表示されることがあります。Azurite は `make stop` で停止します。
+`Ctrl+C` で API を止めた際にも、残りのメトリクスなどがまとめて表示されることがあります。別のターミナルから `make stop` を実行すると、`make dev` または `make api` で起動した API と Azurite・Aspire Dashboard をまとめて停止できます。

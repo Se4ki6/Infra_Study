@@ -2,7 +2,7 @@
 
 ASP.NET Core Minimal APIで注文を受け付け、Azure Blob StorageへJSONとして保存する学習用サンプルです。Clean Architectureを参考に、Domain・Application・Infrastructure・Apiの4プロジェクトに分けています。ローカルではAzuriteを使い、Application Insightsを設定するとログ・トレース・メトリクスをAzure Monitorへ送ります。
 
-OpenTelemetryの基本と、正常系・エラー系の観察手順は[初学者向けガイド](docs/learning-guide.md)を参照してください。`make dev` の出力を読むときは[コンソール出力ガイド](docs/console-output-guide.md)を参照してください。AzureリソースのTerraform実装方針とOTelの確認計画は[Terraform・監視リソース設計](docs/terraform-otel-design.md)にまとめています。
+OpenTelemetryの基本と、正常系・エラー系の観察手順は[初学者向けガイド](docs/learning-guide.md)を参照してください。Console Exporterを使う`make api`の出力は[コンソール出力ガイド](docs/console-output-guide.md)を参照してください。AzureリソースのTerraform実装方針とOTelの確認計画は[Terraform・監視リソース設計](docs/terraform-otel-design.md)にまとめています。
 
 ## プロジェクト構成
 
@@ -24,23 +24,25 @@ src/
 
 ## 起動
 
-プロジェクト直下で次のコマンドを実行すると、Azuriteを起動してからAPIを起動します。
+プロジェクト直下で次のコマンドを実行すると、AzuriteとAspire Dashboardをコンテナで起動し、APIをホスト上で起動します。接続文字列を設定していない場合、ログ・トレース・メトリクスはDashboardへ送ります。
 
 ```sh
 make dev
 ```
 
-APIは`Ctrl+C`で停止します。Azuriteは起動したままなので、停止するときは別途次を実行してください。
+Dashboardは[http://localhost:18888](http://localhost:18888)で開けます。ログイン URL は`make dev`の実行結果に表示されます。APIは`Ctrl+C`で停止します。コンテナを停止するときは別途次を実行してください。
 
 ```sh
 make stop
 ```
 
-`make stop`はAzuriteのコンテナを停止しますが、保存データは残します。APIだけを起動する場合は`make api`、ビルドする場合は`make build`を使います。ポートを変更するには、たとえば`make dev PORT=5081`を実行します。
+`make stop`は`make dev`または`make api`で起動したAPIと、Azurite・Dashboardのコンテナを停止します。Azuriteの保存データは残りますが、Dashboardのテレメトリはコンテナの再起動で消えます。ビルドする場合は`make build`を使います。APIのポートを変更するには、たとえば`make dev PORT=5081`を実行します。
 
 Swagger UIは[http://localhost:5080/swagger](http://localhost:5080/swagger)で開けます。
 
-`APPLICATIONINSIGHTS_CONNECTION_STRING`が未設定の場合、トレース・メトリクス・ログはOpenTelemetryのConsole Exporterからコンソールに出ます。Application Insightsを使う場合は、Portalで取得した接続文字列を環境変数に設定してからAPIを起動します。
+`make dev`では`OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317`と`OTEL_EXPORTER_OTLP_PROTOCOL=grpc`をAPIへ渡します。DashboardのTraces、Structured logs、Metricsで注文処理を確認してください。メトリクスの表示は送信間隔の分だけ遅れることがあります。
+
+`make api`では、`APPLICATIONINSIGHTS_CONNECTION_STRING`があればAzure Monitor、なければ`OTEL_EXPORTER_OTLP_ENDPOINT`が指定されているとOTLP、どちらもなければConsole Exporterを使用します。Application Insightsを使う場合は、Portalで取得した接続文字列を環境変数に設定してからAPIを起動します。接続文字列はOTLPエンドポイントより優先されます。
 
 ```sh
 export APPLICATIONINSIGHTS_CONNECTION_STRING='InstrumentationKey=...;IngestionEndpoint=...'
@@ -79,7 +81,7 @@ Azure Blob Storage SDKのActivitySourceは`AddSource("Azure.*")`で購読しま�
 
 ## Azure リソースを Terraform で作成する
 
-`terraform/` は Resource Group、Log Analytics Workspace、ワークスペースベースの Application Insights、Storage Account、非公開の `orders` Blob コンテナーに加え、Container Apps Environment、ACR、Managed Identity と `AcrPull` ロールを管理します。Azure にデプロイせずローカルの Console Exporter と Azurite だけを使う場合、この手順は不要です。リソースの構成とテレメトリ確認計画は[設計書](docs/terraform-otel-design.md)を参照してください。
+`terraform/` は Resource Group、Log Analytics Workspace、ワークスペースベースの Application Insights、Storage Account、非公開の `orders` Blob コンテナーに加え、Container Apps Environment、ACR、Managed Identity と `AcrPull` ロールを管理します。Azure にデプロイせずローカルの Aspire Dashboard と Azurite だけを使う場合、この手順は不要です。リソースの構成とテレメトリ確認計画は[設計書](docs/terraform-otel-design.md)を参照してください。
 
 Terraform と Azure CLI を用意し、対象 subscription を選びます。`az account show` の ID と、以降の `<subscription ID>` が一致することを確認してください。
 

@@ -186,7 +186,7 @@ Workspace と Insights の日次上限を両方設定します。ワークスペ
 
 初期段階は現在の `BlobContainerClient` 実装に合わせ、Storage の接続文字列を `Blob__ConnectionString`、コンテナー名を `Blob__ContainerName`、Insights の接続文字列を `APPLICATIONINSIGHTS_CONNECTION_STRING` としてローカル API に渡します。環境変数へ渡す具体的な手順は Terraform 実装時の README に記載します。実値を README、tfvars、コマンド履歴、Git 管理下のファイルへ貼り付けません。Storage のアカウントキーを扱う方式なので、後で API を Azure に配置する際は Managed Identity と Blob Data 権限を使うようアプリ設定と認証コードを改修します。
 
-Insights の接続文字列を設定した実行では、現行 `Program.cs` は `UseAzureMonitor()` を有効にします。未設定なら Console Exporter が有効になります。`OTEL_SERVICE_NAME=otel-order-api` を設定し、Azure の画面でサービスを識別しやすくします。[Azure Monitor Distro の設定](https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-configuration)を参照してください。
+Insights の接続文字列を設定した実行では、現行 `Program.cs` は `UseAzureMonitor()` を有効にします。未設定で `OTEL_EXPORTER_OTLP_ENDPOINT` が指定されていれば OTLP Exporter、それも未設定なら Console Exporter が有効になります。`OTEL_SERVICE_NAME=otel-order-api` を設定し、Azure の画面でサービスを識別しやすくします。[Azure Monitor Distro の設定](https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-configuration)を参照してください。
 
 ### 実装後の操作手順として README に追記する内容
 

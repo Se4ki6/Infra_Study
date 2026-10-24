@@ -16,6 +16,7 @@ public static class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         var applicationInsightsConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+        var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
 
         // 独自のMeterとActivitySourceをOpenTelemetry SDKに購読させます。
         // ここで指定する名前はApplication層のTelemetry定義と一致させます。
@@ -40,17 +41,36 @@ public static class Program
         }
         else
         {
-            // 接続文字列なしでも試せるよう、全シグナルをローカルのConsole Exporterへ送ります。
-            Console.WriteLine("APPLICATIONINSIGHTS_CONNECTION_STRING is unset; telemetry will be printed locally.");
+            // ローカル実行では送信先の指定に応じてOTLPかConsole Exporterを選びます。
+            var useOtlp = !string.IsNullOrWhiteSpace(otlpEndpoint);
+            Console.WriteLine(useOtlp
+                ? $"Telemetry will be sent to the OTLP endpoint: {otlpEndpoint}"
+                : "OTEL_EXPORTER_OTLP_ENDPOINT is unset; telemetry will be printed locally.");
             builder.Logging.ClearProviders();
             builder.Services.AddOpenTelemetry()
-                .WithMetrics(metrics => metrics.AddConsoleExporter())
-                .WithTracing(tracing => tracing
+                .WithMetrics(metrics =>
+                {
+                    if (useOtlp)
+                        metrics.AddOtlpExporter();
+                    else
+                        metrics.AddConsoleExporter();
+                })
+                .WithTracing(tracing =>
+                {
                     // Distroを使わないローカル実行では、HTTPとAzure SDKの計測を明示的に登録します。
-                    .AddAspNetCoreInstrumentation()
-                    .AddSource("Azure.*")
-                    .AddConsoleExporter());
-            builder.Logging.AddOpenTelemetry(logging => logging.AddConsoleExporter());
+                    tracing.AddAspNetCoreInstrumentation().AddSource("Azure.*");
+                    if (useOtlp)
+                        tracing.AddOtlpExporter();
+                    else
+                        tracing.AddConsoleExporter();
+                });
+            builder.Logging.AddOpenTelemetry(logging =>
+            {
+                if (useOtlp)
+                    logging.AddOtlpExporter();
+                else
+                    logging.AddConsoleExporter();
+            });
         }
 
         var app = builder.Build();

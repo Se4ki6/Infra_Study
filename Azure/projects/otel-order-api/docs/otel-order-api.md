@@ -5,7 +5,7 @@
 ## 現在の進捗
 
 - 注文の作成・取得 API、Azure Blob Storage への永続化、OTel によるログ・トレース・メトリクスの計測は実装済みです。
-- ローカルでは Docker Compose の Azurite をストレージとして使えます。
+- ローカルでは Docker Compose の Azurite をストレージ、Aspire Dashboardをテレメトリの表示先として使えます。
 - `APPLICATIONINSIGHTS_CONNECTION_STRING` を設定すれば、Azure Monitor / Application Insights にテレメトリを送る構成です。
 - Container Apps 向け Dockerfile と Terraform のホスト基盤は実装済みです。初回 apply は Environment・ACR・Managed Identity・`AcrPull` を作り、`enable_api = true` にする前にイメージを ACR に push します。Azure への apply、イメージの push、Container App の起動、CI/CD は未実施です。
 
@@ -30,7 +30,8 @@ POST /orders または GET /orders/{id}
   +-- Azure Blob SDK の依存関係 Activity
   |
   +-- 接続文字列あり: Azure Monitor / Application Insights
-      接続文字列なし: Console Exporter（標準出力）
+      接続文字列なし・OTLPエンドポイントあり: Aspire Dashboardなど
+      両方なし: Console Exporter（標準出力）
 ```
 
 ## OTel の記述と利用箇所
@@ -40,7 +41,7 @@ POST /orders または GET /orders/{id}
 | 独自トレース | `src/Application/Telemetry.cs` の `ActivitySource` | `CreateOrderHandler`、`GetOrderHandler` | 注文ユースケースを HTTP リクエスト配下の子スパンとして追跡する |
 | HTTP トレース | `src/Api/Program.cs` の `AddAspNetCoreInstrumentation()`（ローカル時） | ASP.NET Core が自動記録 | HTTP メソッド、パス、応答結果、処理時間を記録する |
 | Blob 依存関係トレース | `Program.cs` の `AddSource("Azure.*")`（ローカル時） | `BlobOrderRepository` が呼ぶ Azure Blob SDK | Blob 作成、アップロード、ダウンロードを依存関係スパンとして確認する |
-| ログ | `Program.cs` の `AddOpenTelemetry` / `AddConsoleExporter` | 両ハンドラーの `ILogger` | 作成・取得・入力拒否・ストレージ障害を記録する |
+| ログ | `Program.cs` の `AddOpenTelemetry` / `AddOtlpExporter` / `AddConsoleExporter` | 両ハンドラーの `ILogger` | 作成・取得・入力拒否・ストレージ障害を記録する |
 | メトリクス | `Telemetry.cs` の `Meter` | `CreateOrderHandler` | 作成要求数、作成所要時間、商品数を時系列で集計する |
 | Azure Monitor 送信 | `Program.cs` の `UseAzureMonitor()` | SDK が収集した全シグナル | Application Insights へ送る |
 
@@ -64,7 +65,8 @@ builder.Services.ConfigureOpenTelemetryTracerProvider(traceBuilder =>
 | 条件 | 設定 | 出力先 |
 | --- | --- | --- |
 | 接続文字列あり | `AddOpenTelemetry().UseAzureMonitor(...)` | Azure Monitor / Application Insights |
-| 接続文字列なし | Console Exporter、ASP.NET Core 計測、`Azure.*` 購読 | API プロセスの標準出力 |
+| 接続文字列なし・OTLPエンドポイントあり | OTLP Exporter、ASP.NET Core 計測、`Azure.*` 購読 | Aspire Dashboardなど |
+| 両方なし | Console Exporter、ASP.NET Core 計測、`Azure.*` 購読 | API プロセスの標準出力 |
 
 ローカル時の `AddAspNetCoreInstrumentation()` は HTTP リクエストの親スパンを作ります。`AddSource("Azure.*")` は Blob SDK が作る依存関係スパンを受け取るための設定です。
 
@@ -116,9 +118,9 @@ builder.Services.ConfigureOpenTelemetryTracerProvider(traceBuilder =>
 
 ## 実行時の確認方法
 
-1. `docker compose up -d` で Azurite を起動します。
-2. 接続文字列を設定せずに API を起動すると、OTel はコンソール出力になります。
-3. `POST /orders` を実行し、HTTP スパン、`orders.create`、Blob 操作、作成ログ、3 種のメトリクスを確認します。
+1. `make dev`でAzuriteとAspire Dashboardを起動します。
+2. `docker compose logs aspire-dashboard`のログインURLを使い、`http://localhost:18888`を開きます。
+3. `POST /orders`を実行し、DashboardでHTTPスパン、`orders.create`、Blob操作、作成ログ、3種のメトリクスを確認します。
 4. 数量を `0` にしたリクエストでは、400、Warning ログ、`result=rejected`、Error 状態の `orders.create` を確認します。
 5. Azurite を停止してから作成すると、503、Error ログ、`result=storage_error`、Error 状態のスパンを確認できます。
 
