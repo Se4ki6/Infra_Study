@@ -55,6 +55,15 @@ public static class Program
 
         var app = builder.Build();
 
+        // リポジトリの OpenAPI 定義を Swagger UI と直接ダウンロードの両方に使います。
+        app.MapGet("/openapi.yml", () => Results.File(
+            Path.Combine(AppContext.BaseDirectory, "openapi.yml"), "application/yaml"));
+        app.UseSwaggerUI(options =>
+        {
+            options.RoutePrefix = "swagger";
+            options.SwaggerEndpoint("../openapi.yml", "注文 API");
+        });
+
         // 死活確認用エンドポイントです。注文処理やBlob Storageにはアクセスしません。
         app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 

@@ -1,0 +1,157 @@
+openapi: 3.0.3
+info:
+  title: OpenTelemetry 注文 API
+  version: 1.0.0
+  description: >-
+    注文を Azure Blob Storage に保存する学習用 API。
+    ローカルでは Azurite を使用します。
+servers:
+  - url: /
+    description: 現在のホスト
+paths:
+  /health:
+    get:
+      summary: API プロセスの死活確認
+      description: Blob Storage への接続確認は行いません。
+      operationId: getHealth
+      responses:
+        '200':
+          description: API プロセスが動作中
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: ok
+  /orders:
+    post:
+      summary: 注文の作成
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+            example:
+              productId: book-001
+              quantity: 2
+      responses:
+        '201':
+          description: 注文を作成した
+          headers:
+            Location:
+              description: 作成した注文の取得 URL
+              schema:
+                type: string
+                example: /orders/6b0ee79f-3bdb-4245-a6d9-fc48e1a5efce
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: 入力が無効
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblemDetails'
+        '503':
+          description: 注文ストレージを利用できない
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /orders/{id}:
+    get:
+      summary: 注文の取得
+      operationId: getOrder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 注文 ID（UUID）
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 注文が見つかった
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          description: 注文が見つからない
+        '503':
+          description: 注文ストレージを利用できない
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: ok
+    CreateOrderRequest:
+      type: object
+      required:
+        - productId
+        - quantity
+      properties:
+        productId:
+          type: string
+          minLength: 1
+          description: 空白のみの値も受け付けません。
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+    Order:
+      type: object
+      required:
+        - id
+        - productId
+        - quantity
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        productId:
+          type: string
+        quantity:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+    ValidationProblemDetails:
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetails'
+        - type: object
+          properties:
+            errors:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
