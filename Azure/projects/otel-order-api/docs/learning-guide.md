@@ -99,7 +99,7 @@ Azuriteを停止してから正常な注文を送ります。HTTP 503、保存�
 
 ## Application Insightsで見る
 
-1. Azure Portalで手動作成したApplication InsightsのOverviewからConnection Stringをコピーします。
+1. Application InsightsのOverviewからConnection Stringを取得します。Terraformで作成する方針は[Terraform・監視リソース設計](terraform-otel-design.md)を参照してください。
 2. 環境変数`APPLICATIONINSIGHTS_CONNECTION_STRING`へ設定してAPIを再起動します。
 3. 注文を数回送信し、Application InsightsのApplication Mapまたはトランザクション検索でリクエストを開きます。
 4. Logsを開き、リクエスト・依存関係・ログ・メトリクスを確認します。
