@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+.git/
+.terraform/
+terraform/
+terraform.tfstate
+terraform.tfstate.*
+*.tfvars
+*.tfplan
