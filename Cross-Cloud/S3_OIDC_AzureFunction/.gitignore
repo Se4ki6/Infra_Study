@@ -18,3 +18,5 @@ obj/
 # 動作確認スクリプト（function-keyを含むため実体はコミットしない）
 scripts/verify.sh
 !scripts/verify.sh.example
+
+temp/mslearn-mcp/**
