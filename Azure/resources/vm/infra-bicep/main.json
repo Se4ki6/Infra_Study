@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "namePrefix": {
+      "value": "vm"
+    },
+    "environment": {
+      "value": "dev"
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "vmSize": {
+      "value": "Standard_B1s"
+    },
+    "adminUsername": {
+      "value": "azureuser"
+    },
+    "sshPublicKey": {
+      "value": "ssh-rsa REPLACE_ME_WITH_YOUR_REAL_PUBLIC_KEY_AT_DEPLOY_TIME dummy@example.com"
+    },
+    "allowedSshSourceAddressPrefix": {
+      "value": "0.0.0.0/32"
+    },
+    "enableAutoShutdown": {
+      "value": true
+    },
+    "autoShutdownTime": {
+      "value": "2200"
+    },
+    "autoShutdownTimeZone": {
+      "value": "Tokyo Standard Time"
+    },
+    "tags": {
+      "value": {
+        "project": "azure-learning",
+        "managedBy": "bicep",
+        "workload": "vm-minimal"
+      }
+    }
+  }
+}
