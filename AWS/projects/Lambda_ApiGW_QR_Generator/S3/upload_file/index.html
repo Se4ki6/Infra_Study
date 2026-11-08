@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QRコード生成ツール</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            text-align: left;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .qr-result {
+            margin-top: 30px;
+            padding: 20px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 15px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .qr-result img {
+            max-width: 250px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .qr-result.loading {
+            background: #f9f9f9;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e0e0e0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            color: #e74c3c;
+            padding: 15px;
+            background: #fdf2f2;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .success-message {
+            color: #27ae60;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .download-btn {
+            background: #27ae60;
+            margin-top: 15px;
+            width: auto;
+            padding: 10px 30px;
+            font-size: 0.9rem;
+        }
+
+        .download-btn:hover {
+            box-shadow: 0 10px 30px rgba(39, 174, 96, 0.4);
+        }
+
+        .api-config {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .api-config summary {
+            cursor: pointer;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .api-config input {
+            margin-top: 10px;
+        }
+
+        .placeholder-text {
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔳 QRコード生成</h1>
+        <p class="subtitle">URLを入力してQRコードを作成しましょう</p>
+
+        <details class="api-config">
+            <summary>API設定</summary>
+            <div class="input-group">
+                <label for="apiEndpoint">API エンドポイント</label>
+                <input
+                    type="url"
+                    id="apiEndpoint"
+                    placeholder="https://xxxxxxxx.execute-api.ap-northeast-1.amazonaws.com"
+                    value="https://fou6lchtue.execute-api.ap-northeast-1.amazonaws.com"
+                >
+            </div>
+        </details>
+
+        <div class="input-group">
+            <label for="urlInput">変換するURL</label>
+            <input
+                type="url"
+                id="urlInput"
+                placeholder="https://example.com"
+                value="https://github.com"
+            >
+        </div>
+
+        <button class="btn" id="generateBtn" onclick="generateQRCode()">
+            QRコードを生成
+        </button>
+
+        <div class="qr-result" id="qrResult">
+            <p class="placeholder-text">QRコードがここに表示されます</p>
+        </div>
+    </div>
+
+    <script>
+        // ローカルストレージからAPIエンドポイントを復元
+        const savedEndpoint = localStorage.getItem('qr_api_endpoint');
+        if (savedEndpoint) {
+            document.getElementById('apiEndpoint').value = savedEndpoint;
+        }
+
+        // APIエンドポイントの変更を保存
+        document.getElementById('apiEndpoint').addEventListener('change', function() {
+            localStorage.setItem('qr_api_endpoint', this.value);
+        });
+
+        // Enterキーで生成
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateQRCode();
+            }
+        });
+
+        async function generateQRCode() {
+            const apiEndpoint = document.getElementById('apiEndpoint').value.trim();
+            const targetUrl = document.getElementById('urlInput').value.trim();
+            const resultDiv = document.getElementById('qrResult');
+            const generateBtn = document.getElementById('generateBtn');
+
+            // バリデーション
+            if (!apiEndpoint) {
+                resultDiv.innerHTML = '<div class="error-message">⚠️ API設定を開いてエンドポイントを入力してください</div>';
+                document.querySelector('.api-config').open = true;
+                return;
+            }
+
+            if (!targetUrl) {
+                resultDiv.innerHTML = '<div class="error-message">⚠️ URLを入力してください</div>';
+                return;
+            }
+
+            // URLの形式チェック
+            try {
+                new URL(targetUrl);
+            } catch {
+                resultDiv.innerHTML = '<div class="error-message">⚠️ 有効なURLを入力してください</div>';
+                return;
+            }
+
+            // ローディング表示
+            generateBtn.disabled = true;
+            generateBtn.textContent = '生成中...';
+            resultDiv.classList.add('loading');
+            resultDiv.innerHTML = '<div class="spinner"></div><p style="margin-top: 15px; color: #666;">QRコードを生成しています...</p>';
+
+            try {
+                // APIを呼び出し
+                const apiUrl = `${apiEndpoint}/generate?url=${encodeURIComponent(targetUrl)}`;
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                // レスポンスをBlobとして取得
+                const blob = await response.blob();
+                const imageUrl = URL.createObjectURL(blob);
+
+                // 結果を表示
+                resultDiv.classList.remove('loading');
+                resultDiv.innerHTML = `
+                    <img src="${imageUrl}" alt="QR Code for ${targetUrl}" id="qrImage">
+                    <p class="success-message">✅ QRコードが生成されました</p>
+                    <button class="btn download-btn" onclick="downloadQRCode('${imageUrl}', '${targetUrl}')">
+                        📥 ダウンロード
+                    </button>
+                `;
+
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.classList.remove('loading');
+                resultDiv.innerHTML = `
+                    <div class="error-message">
+                        ❌ エラーが発生しました<br>
+                        <small>${error.message}</small>
+                    </div>
+                    <p style="margin-top: 15px; color: #666; font-size: 0.85rem;">
+                        ヒント: APIエンドポイントが正しいか確認してください
+                    </p>
+                `;
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'QRコードを生成';
+            }
+        }
+
+        function downloadQRCode(imageUrl, targetUrl) {
+            const link = document.createElement('a');
+            link.href = imageUrl;
+            // URLからファイル名を生成
+            const hostname = new URL(targetUrl).hostname.replace(/\./g, '_');
+            link.download = `qrcode_${hostname}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
