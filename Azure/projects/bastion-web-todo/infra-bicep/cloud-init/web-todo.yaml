@@ -1,0 +1,175 @@
+#cloud-config
+package_update: true
+packages:
+  - nginx
+
+write_files:
+  - path: /var/www/html/index.html
+    owner: root:root
+    permissions: '0644'
+    content: |
+      <!doctype html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Private TODO</title>
+        <style>
+          :root {
+            color-scheme: light dark;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          }
+          body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: #eef2f7;
+            color: #172033;
+          }
+          main {
+            width: min(680px, calc(100vw - 32px));
+            background: #ffffff;
+            border: 1px solid #d7deea;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 18px 45px rgba(23, 32, 51, 0.12);
+          }
+          h1 {
+            margin: 0 0 18px;
+            font-size: 28px;
+            letter-spacing: 0;
+          }
+          form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+          }
+          input {
+            flex: 1;
+            min-width: 0;
+            border: 1px solid #b7c0cf;
+            border-radius: 6px;
+            padding: 12px 14px;
+            font-size: 16px;
+          }
+          button {
+            border: 0;
+            border-radius: 6px;
+            padding: 12px 16px;
+            background: #1262b3;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+          }
+          ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+          }
+          li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 0;
+            border-top: 1px solid #e4e9f1;
+          }
+          li.done span {
+            color: #687589;
+            text-decoration: line-through;
+          }
+          .row-actions {
+            display: flex;
+            gap: 8px;
+          }
+          .secondary {
+            background: #e8edf5;
+            color: #1c2b41;
+          }
+          @media (max-width: 520px) {
+            form {
+              flex-direction: column;
+            }
+            li {
+              align-items: flex-start;
+              flex-direction: column;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <main>
+          <h1>Private TODO</h1>
+          <form id="todo-form">
+            <input id="todo-input" autocomplete="off" placeholder="Add a task" required>
+            <button type="submit">Add</button>
+          </form>
+          <ul id="todo-list"></ul>
+        </main>
+        <script>
+          const storageKey = "private-todo-items";
+          const form = document.querySelector("#todo-form");
+          const input = document.querySelector("#todo-input");
+          const list = document.querySelector("#todo-list");
+          let items = JSON.parse(localStorage.getItem(storageKey) || "[]");
+
+          function save() {
+            localStorage.setItem(storageKey, JSON.stringify(items));
+          }
+
+          function render() {
+            list.innerHTML = "";
+            items.forEach((item, index) => {
+              const li = document.createElement("li");
+              li.className = item.done ? "done" : "";
+
+              const text = document.createElement("span");
+              text.textContent = item.text;
+
+              const actions = document.createElement("div");
+              actions.className = "row-actions";
+
+              const toggle = document.createElement("button");
+              toggle.className = "secondary";
+              toggle.type = "button";
+              toggle.textContent = item.done ? "Undo" : "Done";
+              toggle.addEventListener("click", () => {
+                items[index].done = !items[index].done;
+                save();
+                render();
+              });
+
+              const remove = document.createElement("button");
+              remove.type = "button";
+              remove.textContent = "Delete";
+              remove.addEventListener("click", () => {
+                items.splice(index, 1);
+                save();
+                render();
+              });
+
+              actions.append(toggle, remove);
+              li.append(text, actions);
+              list.append(li);
+            });
+          }
+
+          form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const text = input.value.trim();
+            if (!text) return;
+            items.unshift({ text, done: false });
+            input.value = "";
+            save();
+            render();
+          });
+
+          render();
+        </script>
+      </body>
+      </html>
+
+runcmd:
+  - systemctl enable nginx
+  - systemctl restart nginx

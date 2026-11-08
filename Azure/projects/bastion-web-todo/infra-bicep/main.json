@@ -1,0 +1,1142 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.43.8.12551",
+      "templateHash": "1150305783355286606"
+    }
+  },
+  "parameters": {
+    "namePrefix": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 10,
+      "metadata": {
+        "description": "Resource name prefix. Keep it short because VM names have length limits."
+      }
+    },
+    "environment": {
+      "type": "string",
+      "allowedValues": [
+        "dev",
+        "stg",
+        "prod"
+      ],
+      "metadata": {
+        "description": "Environment name."
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure region."
+      }
+    },
+    "bastionVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2as_v4",
+      "allowedValues": [
+        "Standard_B1s",
+        "Standard_B1ms",
+        "Standard_D2as_v4",
+        "Standard_D2s_v3"
+      ],
+      "metadata": {
+        "description": "VM size for the bastion server."
+      }
+    },
+    "webVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2as_v4",
+      "allowedValues": [
+        "Standard_B1s",
+        "Standard_B1ms",
+        "Standard_D2as_v4",
+        "Standard_D2s_v3"
+      ],
+      "metadata": {
+        "description": "VM size for the web server."
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Linux admin user name for both VMs."
+      }
+    },
+    "sshPublicKey": {
+      "type": "string",
+      "metadata": {
+        "description": "OpenSSH public key used for SSH login."
+      }
+    },
+    "allowedSshSourceAddressPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Source IP/CIDR allowed to SSH into the bastion VM. Use your public IP with /32."
+      }
+    },
+    "enableAutoShutdown": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Enable daily auto-shutdown for both VMs."
+      }
+    },
+    "autoShutdownTime": {
+      "type": "string",
+      "defaultValue": "2200",
+      "metadata": {
+        "description": "Auto-shutdown time in HHmm format."
+      }
+    },
+    "autoShutdownTimeZone": {
+      "type": "string",
+      "defaultValue": "Tokyo Standard Time",
+      "metadata": {
+        "description": "Windows time zone ID for auto-shutdown."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Common tags."
+      }
+    }
+  },
+  "variables": {
+    "$fxv#0": "#cloud-config\npackage_update: true\npackages:\n  - nginx\n\nwrite_files:\n  - path: /var/www/html/index.html\n    owner: root:root\n    permissions: '0644'\n    content: |\n      <!doctype html>\n      <html lang=\"en\">\n      <head>\n        <meta charset=\"utf-8\">\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n        <title>Private TODO</title>\n        <style>\n          :root {\n            color-scheme: light dark;\n            font-family: system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;\n          }\n          body {\n            margin: 0;\n            min-height: 100vh;\n            display: grid;\n            place-items: center;\n            background: #eef2f7;\n            color: #172033;\n          }\n          main {\n            width: min(680px, calc(100vw - 32px));\n            background: #ffffff;\n            border: 1px solid #d7deea;\n            border-radius: 8px;\n            padding: 24px;\n            box-shadow: 0 18px 45px rgba(23, 32, 51, 0.12);\n          }\n          h1 {\n            margin: 0 0 18px;\n            font-size: 28px;\n            letter-spacing: 0;\n          }\n          form {\n            display: flex;\n            gap: 10px;\n            margin-bottom: 18px;\n          }\n          input {\n            flex: 1;\n            min-width: 0;\n            border: 1px solid #b7c0cf;\n            border-radius: 6px;\n            padding: 12px 14px;\n            font-size: 16px;\n          }\n          button {\n            border: 0;\n            border-radius: 6px;\n            padding: 12px 16px;\n            background: #1262b3;\n            color: #fff;\n            font-weight: 700;\n            cursor: pointer;\n          }\n          ul {\n            list-style: none;\n            margin: 0;\n            padding: 0;\n          }\n          li {\n            display: flex;\n            align-items: center;\n            justify-content: space-between;\n            gap: 12px;\n            padding: 12px 0;\n            border-top: 1px solid #e4e9f1;\n          }\n          li.done span {\n            color: #687589;\n            text-decoration: line-through;\n          }\n          .row-actions {\n            display: flex;\n            gap: 8px;\n          }\n          .secondary {\n            background: #e8edf5;\n            color: #1c2b41;\n          }\n          @media (max-width: 520px) {\n            form {\n              flex-direction: column;\n            }\n            li {\n              align-items: flex-start;\n              flex-direction: column;\n            }\n          }\n        </style>\n      </head>\n      <body>\n        <main>\n          <h1>Private TODO</h1>\n          <form id=\"todo-form\">\n            <input id=\"todo-input\" autocomplete=\"off\" placeholder=\"Add a task\" required>\n            <button type=\"submit\">Add</button>\n          </form>\n          <ul id=\"todo-list\"></ul>\n        </main>\n        <script>\n          const storageKey = \"private-todo-items\";\n          const form = document.querySelector(\"#todo-form\");\n          const input = document.querySelector(\"#todo-input\");\n          const list = document.querySelector(\"#todo-list\");\n          let items = JSON.parse(localStorage.getItem(storageKey) || \"[]\");\n\n          function save() {\n            localStorage.setItem(storageKey, JSON.stringify(items));\n          }\n\n          function render() {\n            list.innerHTML = \"\";\n            items.forEach((item, index) => {\n              const li = document.createElement(\"li\");\n              li.className = item.done ? \"done\" : \"\";\n\n              const text = document.createElement(\"span\");\n              text.textContent = item.text;\n\n              const actions = document.createElement(\"div\");\n              actions.className = \"row-actions\";\n\n              const toggle = document.createElement(\"button\");\n              toggle.className = \"secondary\";\n              toggle.type = \"button\";\n              toggle.textContent = item.done ? \"Undo\" : \"Done\";\n              toggle.addEventListener(\"click\", () => {\n                items[index].done = !items[index].done;\n                save();\n                render();\n              });\n\n              const remove = document.createElement(\"button\");\n              remove.type = \"button\";\n              remove.textContent = \"Delete\";\n              remove.addEventListener(\"click\", () => {\n                items.splice(index, 1);\n                save();\n                render();\n              });\n\n              actions.append(toggle, remove);\n              li.append(text, actions);\n              list.append(li);\n            });\n          }\n\n          form.addEventListener(\"submit\", (event) => {\n            event.preventDefault();\n            const text = input.value.trim();\n            if (!text) return;\n            items.unshift({ text, done: false });\n            input.value = \"\";\n            save();\n            render();\n          });\n\n          render();\n        </script>\n      </body>\n      </html>\n\nruncmd:\n  - systemctl enable nginx\n  - systemctl restart nginx\n",
+    "prefix": "[toLower(parameters('namePrefix'))]",
+    "env": "[toLower(parameters('environment'))]",
+    "rgName": "[format('rg-{0}-{1}', variables('prefix'), variables('env'))]",
+    "bastionVmName": "[format('vm-{0}-bas-{1}', variables('prefix'), variables('env'))]",
+    "webVmName": "[format('vm-{0}-web-{1}', variables('prefix'), variables('env'))]",
+    "commonTags": "[union(parameters('tags'), createObject('environment', variables('env'), 'workload', 'bastion-web-todo'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2024-11-01",
+      "name": "[variables('rgName')]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('commonTags')]"
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "network",
+      "resourceGroup": "[variables('rgName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "namePrefix": {
+            "value": "[variables('prefix')]"
+          },
+          "environment": {
+            "value": "[variables('env')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "allowedSshSourceAddressPrefix": {
+            "value": "[parameters('allowedSshSourceAddressPrefix')]"
+          },
+          "tags": {
+            "value": "[variables('commonTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.43.8.12551",
+              "templateHash": "8170062913861548150"
+            }
+          },
+          "parameters": {
+            "namePrefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource name prefix."
+              }
+            },
+            "environment": {
+              "type": "string",
+              "metadata": {
+                "description": "Environment name."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure region."
+              }
+            },
+            "allowedSshSourceAddressPrefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Source IP/CIDR allowed to SSH into the bastion VM."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Common tags."
+              }
+            }
+          },
+          "variables": {
+            "vnetName": "[format('vnet-{0}-{1}', parameters('namePrefix'), parameters('environment'))]",
+            "bastionSubnetName": "snet-bastion",
+            "webSubnetName": "snet-web",
+            "bastionNsgName": "[format('nsg-{0}-bas-{1}', parameters('namePrefix'), parameters('environment'))]",
+            "webNsgName": "[format('nsg-{0}-web-{1}', parameters('namePrefix'), parameters('environment'))]",
+            "bastionPipName": "[format('pip-{0}-bas-{1}', parameters('namePrefix'), parameters('environment'))]",
+            "webPipName": "[format('pip-{0}-web-{1}', parameters('namePrefix'), parameters('environment'))]",
+            "bastionNicName": "[format('nic-{0}-bas-{1}', parameters('namePrefix'), parameters('environment'))]",
+            "webNicName": "[format('nic-{0}-web-{1}', parameters('namePrefix'), parameters('environment'))]",
+            "vnetAddressPrefix": "10.10.0.0/16",
+            "bastionSubnetPrefix": "10.10.1.0/24",
+            "webSubnetPrefix": "10.10.2.0/24",
+            "bastionPrivateIp": "10.10.1.10",
+            "webPrivateIp": "10.10.2.10"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2024-07-01",
+              "name": "[variables('bastionNsgName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "Allow-SSH-From-Allowed-Source",
+                    "properties": {
+                      "description": "Allow SSH to the bastion VM only from the approved source.",
+                      "priority": 1000,
+                      "direction": "Inbound",
+                      "access": "Allow",
+                      "protocol": "Tcp",
+                      "sourceAddressPrefix": "[parameters('allowedSshSourceAddressPrefix')]",
+                      "sourcePortRange": "*",
+                      "destinationAddressPrefix": "*",
+                      "destinationPortRange": "22"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2024-07-01",
+              "name": "[variables('webNsgName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "Allow-SSH-From-Bastion-Subnet",
+                    "properties": {
+                      "description": "Allow SSH to the web VM only from the bastion subnet.",
+                      "priority": 1000,
+                      "direction": "Inbound",
+                      "access": "Allow",
+                      "protocol": "Tcp",
+                      "sourceAddressPrefix": "[variables('bastionSubnetPrefix')]",
+                      "sourcePortRange": "*",
+                      "destinationAddressPrefix": "*",
+                      "destinationPortRange": "22"
+                    }
+                  },
+                  {
+                    "name": "Allow-HTTP-From-Internet",
+                    "properties": {
+                      "description": "Allow the TODO app to be reached from the internet.",
+                      "priority": 1010,
+                      "direction": "Inbound",
+                      "access": "Allow",
+                      "protocol": "Tcp",
+                      "sourceAddressPrefix": "Internet",
+                      "sourcePortRange": "*",
+                      "destinationAddressPrefix": "*",
+                      "destinationPortRange": "80"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2024-07-01",
+              "name": "[variables('vnetName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[variables('vnetAddressPrefix')]"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "[variables('bastionSubnetName')]",
+                    "properties": {
+                      "addressPrefix": "[variables('bastionSubnetPrefix')]",
+                      "networkSecurityGroup": {
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('bastionNsgName'))]"
+                      }
+                    }
+                  },
+                  {
+                    "name": "[variables('webSubnetName')]",
+                    "properties": {
+                      "addressPrefix": "[variables('webSubnetPrefix')]",
+                      "networkSecurityGroup": {
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('webNsgName'))]"
+                      }
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('bastionNsgName'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('webNsgName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2024-07-01",
+              "name": "[variables('bastionPipName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Static",
+                "publicIPAddressVersion": "IPv4"
+              }
+            },
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2024-07-01",
+              "name": "[variables('webPipName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Static",
+                "publicIPAddressVersion": "IPv4"
+              }
+            },
+            {
+              "type": "Microsoft.Network/networkInterfaces",
+              "apiVersion": "2024-07-01",
+              "name": "[variables('bastionNicName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "ipConfigurations": [
+                  {
+                    "name": "ipconfig1",
+                    "properties": {
+                      "privateIPAllocationMethod": "Static",
+                      "privateIPAddress": "[variables('bastionPrivateIp')]",
+                      "subnet": {
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('bastionSubnetName'))]"
+                      },
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPipName'))]"
+                      }
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPipName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/networkInterfaces",
+              "apiVersion": "2024-07-01",
+              "name": "[variables('webNicName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "ipConfigurations": [
+                  {
+                    "name": "ipconfig1",
+                    "properties": {
+                      "privateIPAllocationMethod": "Static",
+                      "privateIPAddress": "[variables('webPrivateIp')]",
+                      "subnet": {
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('webSubnetName'))]"
+                      },
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('webPipName'))]"
+                      }
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('webPipName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "bastionNicId": {
+              "type": "string",
+              "metadata": {
+                "description": "Bastion VM NIC resource ID."
+              },
+              "value": "[resourceId('Microsoft.Network/networkInterfaces', variables('bastionNicName'))]"
+            },
+            "webNicId": {
+              "type": "string",
+              "metadata": {
+                "description": "Web VM NIC resource ID."
+              },
+              "value": "[resourceId('Microsoft.Network/networkInterfaces', variables('webNicName'))]"
+            },
+            "bastionPublicIpAddress": {
+              "type": "string",
+              "metadata": {
+                "description": "Bastion public IP address."
+              },
+              "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPipName')), '2024-07-01').ipAddress]"
+            },
+            "webPrivateIpAddress": {
+              "type": "string",
+              "metadata": {
+                "description": "Web VM private IP address."
+              },
+              "value": "[variables('webPrivateIp')]"
+            },
+            "webPublicIpAddress": {
+              "type": "string",
+              "metadata": {
+                "description": "Web VM public IP address."
+              },
+              "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('webPipName')), '2024-07-01').ipAddress]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('rgName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "bastionVm",
+      "resourceGroup": "[variables('rgName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vmName": {
+            "value": "[variables('bastionVmName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "vmSize": {
+            "value": "[parameters('bastionVmSize')]"
+          },
+          "adminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "sshPublicKey": {
+            "value": "[parameters('sshPublicKey')]"
+          },
+          "nicId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'network'), '2025-04-01').outputs.bastionNicId.value]"
+          },
+          "osDiskName": {
+            "value": "[format('osdisk-{0}-bas-{1}', variables('prefix'), variables('env'))]"
+          },
+          "tags": {
+            "value": "[variables('commonTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.43.8.12551",
+              "templateHash": "15069821670315917765"
+            }
+          },
+          "parameters": {
+            "vmName": {
+              "type": "string",
+              "metadata": {
+                "description": "VM name."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure region."
+              }
+            },
+            "vmSize": {
+              "type": "string",
+              "defaultValue": "Standard_D2as_v4",
+              "allowedValues": [
+                "Standard_B1s",
+                "Standard_B1ms",
+                "Standard_D2as_v4",
+                "Standard_D2s_v3"
+              ],
+              "metadata": {
+                "description": "VM size."
+              }
+            },
+            "adminUsername": {
+              "type": "string",
+              "minLength": 1,
+              "metadata": {
+                "description": "Linux admin user name."
+              }
+            },
+            "sshPublicKey": {
+              "type": "string",
+              "metadata": {
+                "description": "OpenSSH public key."
+              }
+            },
+            "nicId": {
+              "type": "string",
+              "metadata": {
+                "description": "NIC resource ID."
+              }
+            },
+            "osDiskName": {
+              "type": "string",
+              "metadata": {
+                "description": "OS disk name."
+              }
+            },
+            "customData": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Base64-encoded cloud-init data. Leave empty when not needed."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Common tags."
+              }
+            }
+          },
+          "variables": {
+            "imageReference": {
+              "publisher": "Canonical",
+              "offer": "0001-com-ubuntu-server-jammy",
+              "sku": "22_04-lts-gen2",
+              "version": "latest"
+            },
+            "baseOsProfile": {
+              "computerName": "[parameters('vmName')]",
+              "adminUsername": "[parameters('adminUsername')]",
+              "linuxConfiguration": {
+                "disablePasswordAuthentication": true,
+                "ssh": {
+                  "publicKeys": [
+                    {
+                      "path": "[format('/home/{0}/.ssh/authorized_keys', parameters('adminUsername'))]",
+                      "keyData": "[parameters('sshPublicKey')]"
+                    }
+                  ]
+                },
+                "provisionVMAgent": true
+              }
+            },
+            "osProfile": "[if(empty(parameters('customData')), variables('baseOsProfile'), union(variables('baseOsProfile'), createObject('customData', parameters('customData'))))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2024-07-01",
+              "name": "[parameters('vmName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "hardwareProfile": {
+                  "vmSize": "[parameters('vmSize')]"
+                },
+                "storageProfile": {
+                  "imageReference": "[variables('imageReference')]",
+                  "osDisk": {
+                    "name": "[parameters('osDiskName')]",
+                    "createOption": "FromImage",
+                    "caching": "ReadWrite",
+                    "diskSizeGB": 30,
+                    "managedDisk": {
+                      "storageAccountType": "Standard_LRS"
+                    }
+                  }
+                },
+                "osProfile": "[variables('osProfile')]",
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[parameters('nicId')]",
+                      "properties": {
+                        "primary": true
+                      }
+                    }
+                  ]
+                },
+                "diagnosticsProfile": {
+                  "bootDiagnostics": {
+                    "enabled": true
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "vmId": {
+              "type": "string",
+              "metadata": {
+                "description": "VM resource ID."
+              },
+              "value": "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+            },
+            "vmName": {
+              "type": "string",
+              "metadata": {
+                "description": "VM name."
+              },
+              "value": "[parameters('vmName')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'network')]",
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('rgName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "webVm",
+      "resourceGroup": "[variables('rgName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vmName": {
+            "value": "[variables('webVmName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "vmSize": {
+            "value": "[parameters('webVmSize')]"
+          },
+          "adminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "sshPublicKey": {
+            "value": "[parameters('sshPublicKey')]"
+          },
+          "nicId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'network'), '2025-04-01').outputs.webNicId.value]"
+          },
+          "osDiskName": {
+            "value": "[format('osdisk-{0}-web-{1}', variables('prefix'), variables('env'))]"
+          },
+          "customData": {
+            "value": "[base64(variables('$fxv#0'))]"
+          },
+          "tags": {
+            "value": "[variables('commonTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.43.8.12551",
+              "templateHash": "15069821670315917765"
+            }
+          },
+          "parameters": {
+            "vmName": {
+              "type": "string",
+              "metadata": {
+                "description": "VM name."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure region."
+              }
+            },
+            "vmSize": {
+              "type": "string",
+              "defaultValue": "Standard_D2as_v4",
+              "allowedValues": [
+                "Standard_B1s",
+                "Standard_B1ms",
+                "Standard_D2as_v4",
+                "Standard_D2s_v3"
+              ],
+              "metadata": {
+                "description": "VM size."
+              }
+            },
+            "adminUsername": {
+              "type": "string",
+              "minLength": 1,
+              "metadata": {
+                "description": "Linux admin user name."
+              }
+            },
+            "sshPublicKey": {
+              "type": "string",
+              "metadata": {
+                "description": "OpenSSH public key."
+              }
+            },
+            "nicId": {
+              "type": "string",
+              "metadata": {
+                "description": "NIC resource ID."
+              }
+            },
+            "osDiskName": {
+              "type": "string",
+              "metadata": {
+                "description": "OS disk name."
+              }
+            },
+            "customData": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Base64-encoded cloud-init data. Leave empty when not needed."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Common tags."
+              }
+            }
+          },
+          "variables": {
+            "imageReference": {
+              "publisher": "Canonical",
+              "offer": "0001-com-ubuntu-server-jammy",
+              "sku": "22_04-lts-gen2",
+              "version": "latest"
+            },
+            "baseOsProfile": {
+              "computerName": "[parameters('vmName')]",
+              "adminUsername": "[parameters('adminUsername')]",
+              "linuxConfiguration": {
+                "disablePasswordAuthentication": true,
+                "ssh": {
+                  "publicKeys": [
+                    {
+                      "path": "[format('/home/{0}/.ssh/authorized_keys', parameters('adminUsername'))]",
+                      "keyData": "[parameters('sshPublicKey')]"
+                    }
+                  ]
+                },
+                "provisionVMAgent": true
+              }
+            },
+            "osProfile": "[if(empty(parameters('customData')), variables('baseOsProfile'), union(variables('baseOsProfile'), createObject('customData', parameters('customData'))))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2024-07-01",
+              "name": "[parameters('vmName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "hardwareProfile": {
+                  "vmSize": "[parameters('vmSize')]"
+                },
+                "storageProfile": {
+                  "imageReference": "[variables('imageReference')]",
+                  "osDisk": {
+                    "name": "[parameters('osDiskName')]",
+                    "createOption": "FromImage",
+                    "caching": "ReadWrite",
+                    "diskSizeGB": 30,
+                    "managedDisk": {
+                      "storageAccountType": "Standard_LRS"
+                    }
+                  }
+                },
+                "osProfile": "[variables('osProfile')]",
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[parameters('nicId')]",
+                      "properties": {
+                        "primary": true
+                      }
+                    }
+                  ]
+                },
+                "diagnosticsProfile": {
+                  "bootDiagnostics": {
+                    "enabled": true
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "vmId": {
+              "type": "string",
+              "metadata": {
+                "description": "VM resource ID."
+              },
+              "value": "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+            },
+            "vmName": {
+              "type": "string",
+              "metadata": {
+                "description": "VM name."
+              },
+              "value": "[parameters('vmName')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'network')]",
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('rgName'))]"
+      ]
+    },
+    {
+      "condition": "[parameters('enableAutoShutdown')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "bastionAutoShutdown",
+      "resourceGroup": "[variables('rgName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vmId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'bastionVm'), '2025-04-01').outputs.vmId.value]"
+          },
+          "vmName": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'bastionVm'), '2025-04-01').outputs.vmName.value]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "time": {
+            "value": "[parameters('autoShutdownTime')]"
+          },
+          "timeZoneId": {
+            "value": "[parameters('autoShutdownTimeZone')]"
+          },
+          "tags": {
+            "value": "[variables('commonTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.43.8.12551",
+              "templateHash": "11773650606807453362"
+            }
+          },
+          "parameters": {
+            "vmId": {
+              "type": "string",
+              "metadata": {
+                "description": "Target VM resource ID."
+              }
+            },
+            "vmName": {
+              "type": "string",
+              "metadata": {
+                "description": "Target VM name."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure region."
+              }
+            },
+            "time": {
+              "type": "string",
+              "defaultValue": "2200",
+              "metadata": {
+                "description": "Shutdown time in HHmm format."
+              }
+            },
+            "timeZoneId": {
+              "type": "string",
+              "defaultValue": "Tokyo Standard Time",
+              "metadata": {
+                "description": "Windows time zone ID."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Common tags."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.DevTestLab/schedules",
+              "apiVersion": "2018-09-15",
+              "name": "[format('shutdown-computevm-{0}', parameters('vmName'))]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "status": "Enabled",
+                "taskType": "ComputeVmShutdownTask",
+                "dailyRecurrence": {
+                  "time": "[parameters('time')]"
+                },
+                "timeZoneId": "[parameters('timeZoneId')]",
+                "targetResourceId": "[parameters('vmId')]",
+                "notificationSettings": {
+                  "status": "Disabled",
+                  "timeInMinutes": 30
+                }
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'bastionVm')]",
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('rgName'))]"
+      ]
+    },
+    {
+      "condition": "[parameters('enableAutoShutdown')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "webAutoShutdown",
+      "resourceGroup": "[variables('rgName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vmId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'webVm'), '2025-04-01').outputs.vmId.value]"
+          },
+          "vmName": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'webVm'), '2025-04-01').outputs.vmName.value]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "time": {
+            "value": "[parameters('autoShutdownTime')]"
+          },
+          "timeZoneId": {
+            "value": "[parameters('autoShutdownTimeZone')]"
+          },
+          "tags": {
+            "value": "[variables('commonTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.43.8.12551",
+              "templateHash": "11773650606807453362"
+            }
+          },
+          "parameters": {
+            "vmId": {
+              "type": "string",
+              "metadata": {
+                "description": "Target VM resource ID."
+              }
+            },
+            "vmName": {
+              "type": "string",
+              "metadata": {
+                "description": "Target VM name."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure region."
+              }
+            },
+            "time": {
+              "type": "string",
+              "defaultValue": "2200",
+              "metadata": {
+                "description": "Shutdown time in HHmm format."
+              }
+            },
+            "timeZoneId": {
+              "type": "string",
+              "defaultValue": "Tokyo Standard Time",
+              "metadata": {
+                "description": "Windows time zone ID."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Common tags."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.DevTestLab/schedules",
+              "apiVersion": "2018-09-15",
+              "name": "[format('shutdown-computevm-{0}', parameters('vmName'))]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "status": "Enabled",
+                "taskType": "ComputeVmShutdownTask",
+                "dailyRecurrence": {
+                  "time": "[parameters('time')]"
+                },
+                "timeZoneId": "[parameters('timeZoneId')]",
+                "targetResourceId": "[parameters('vmId')]",
+                "notificationSettings": {
+                  "status": "Disabled",
+                  "timeInMinutes": 30
+                }
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('rgName'))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'webVm')]"
+      ]
+    }
+  ],
+  "outputs": {
+    "resourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource group name."
+      },
+      "value": "[variables('rgName')]"
+    },
+    "bastionVmName": {
+      "type": "string",
+      "metadata": {
+        "description": "Bastion VM name."
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'bastionVm'), '2025-04-01').outputs.vmName.value]"
+    },
+    "webVmName": {
+      "type": "string",
+      "metadata": {
+        "description": "Web VM name."
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'webVm'), '2025-04-01').outputs.vmName.value]"
+    },
+    "bastionPublicIpAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "Bastion public IP address."
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'network'), '2025-04-01').outputs.bastionPublicIpAddress.value]"
+    },
+    "webPrivateIpAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "Web VM private IP address."
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'network'), '2025-04-01').outputs.webPrivateIpAddress.value]"
+    },
+    "webPublicIpAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "Web VM public IP address."
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'network'), '2025-04-01').outputs.webPublicIpAddress.value]"
+    },
+    "bastionSshCommand": {
+      "type": "string",
+      "metadata": {
+        "description": "SSH command for the bastion VM."
+      },
+      "value": "[format('ssh {0}@{1}', parameters('adminUsername'), reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'network'), '2025-04-01').outputs.bastionPublicIpAddress.value)]"
+    },
+    "webSshCommand": {
+      "type": "string",
+      "metadata": {
+        "description": "SSH command for the private web VM through the bastion VM."
+      },
+      "value": "[format('ssh -J {0}@{1} {2}@{3}', parameters('adminUsername'), reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'network'), '2025-04-01').outputs.bastionPublicIpAddress.value, parameters('adminUsername'), reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'network'), '2025-04-01').outputs.webPrivateIpAddress.value)]"
+    },
+    "todoAppUrl": {
+      "type": "string",
+      "metadata": {
+        "description": "Public URL for browsing the TODO app."
+      },
+      "value": "[format('http://{0}', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'network'), '2025-04-01').outputs.webPublicIpAddress.value)]"
+    }
+  }
+}
