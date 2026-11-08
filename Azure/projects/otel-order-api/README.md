@@ -40,7 +40,7 @@ make stop
 
 Swagger UIは[http://localhost:5080/swagger](http://localhost:5080/swagger)で開けます。
 
-`make dev`では`OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317`と`OTEL_EXPORTER_OTLP_PROTOCOL=grpc`をAPIへ渡します。DashboardのTraces、Structured logs、Metricsで注文処理を確認してください。メトリクスの表示は送信間隔の分だけ遅れることがあります。
+`make dev`はAPIをDevelopment環境で起動し、`src/Api/appsettings.Development.json`の`OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317`と`OTEL_EXPORTER_OTLP_PROTOCOL=grpc`を読み込みます。送信先を一時的に変える場合は`make dev OTLP_ENDPOINT=http://別のホスト:4317`で上書きできます。DashboardのTraces、Structured logs、Metricsで注文処理を確認してください。メトリクスの表示は送信間隔の分だけ遅れることがあります。
 
 `make api`では、`APPLICATIONINSIGHTS_CONNECTION_STRING`があればAzure Monitor、なければ`OTEL_EXPORTER_OTLP_ENDPOINT`が指定されているとOTLP、どちらもなければConsole Exporterを使用します。Application Insightsを使う場合は、Portalで取得した接続文字列を環境変数に設定してからAPIを起動します。接続文字列はOTLPエンドポイントより優先されます。
 
@@ -50,6 +50,8 @@ make dev
 ```
 
 Azurite以外のBlob Storage接続文字列を使う場合は`Blob__ConnectionString`、コンテナ名を変える場合は`Blob__ContainerName`を設定します。接続文字列はシェル履歴やGitに残さないようにしてください。
+
+`127.0.0.1:10000`への接続が拒否される場合は、Azuriteが停止している可能性があります。`docker compose ps`で状態を確認し、停止していれば`docker compose up -d azurite`で起動してください。`make api`はAzuriteを自動起動しません。
 
 ## APIの操作
 
