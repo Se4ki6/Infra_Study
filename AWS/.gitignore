@@ -1,0 +1,7 @@
+# AWS Lambda build output
+lambda_function_payload.zip
+python_payload/
+
+# Ignore newly added upload images while retaining empty placeholders.
+**/upload_file/images/*
+!**/upload_file/images/.gitkeep
