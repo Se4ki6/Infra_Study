@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudFront + S3 テスト</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #FF9900;
+            text-align: center;
+        }
+        .success {
+            color: #28a745;
+            font-size: 1.2em;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .info {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-left: 4px solid #2196F3;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 CloudFront + S3 動作確認成功！</h1>
+        <p class="success">✓ このページがCloudFront経由で配信されています</p>
+
+        <div class="info">
+            <h3>確認内容</h3>
+            <ul>
+                <li>S3バケットに静的コンテンツを配置</li>
+                <li>CloudFront経由でアクセス可能</li>
+                <li>S3への直接アクセスはブロック（OAC使用）</li>
+                <li>HTTPSへの自動リダイレクト</li>
+            </ul>
+        </div>
+
+        <div class="info">
+            <h3>技術スタック</h3>
+            <ul>
+                <li><strong>AWS S3:</strong> 静的コンテンツの保存</li>
+                <li><strong>AWS CloudFront:</strong> CDNによる高速配信</li>
+                <li><strong>OAC:</strong> CloudFront専用アクセス制御</li>
+                <li><strong>Terraform:</strong> インフラのコード管理</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
