@@ -1,0 +1,29 @@
+# Packaging for the microsoft-learn skill's fastmcp-based CLI wrapper.
+#
+# Install once (from this directory or the repo root) so the short `mslmcp`
+# command lands on PATH, the same way the use-tavily skill installs `tav`:
+#
+#     pip install -e .codex/skills/microsoft-learn
+#
+# Without installing, the script still runs directly via
+# `python .codex/skills/microsoft-learn/scripts/mslmcp_cli.py ...`.
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "infra-docs-mslearn-mcp"
+version = "0.1.0"
+description = "fastmcp-based CLI wrapper around the official Microsoft Learn MCP server"
+requires-python = ">=3.11"
+dependencies = [
+    "fastmcp",
+]
+
+[project.scripts]
+mslmcp = "mslmcp_cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "scripts" }
+py-modules = ["mslmcp_cli"]
