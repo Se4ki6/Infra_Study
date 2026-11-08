@@ -50,7 +50,7 @@ Web VM は HTTP のみ外部公開します。SSH は Web VM に直接開けず�
 詳細な手順は [docs/deployment-guide.md](docs/deployment-guide.md) を参照してください。以下は最短手順です。
 
 ```powershell
-cd resource-project\bastion-web-todo\infra-bicep
+cd Azure\projects\bastion-web-todo\infra-bicep
 
 $myIp = (Invoke-RestMethod 'https://api.ipify.org')
 $allowedSsh = "$myIp/32"

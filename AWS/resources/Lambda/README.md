@@ -56,10 +56,10 @@ def handler(event, context):
 
 ## 📖 関連ドキュメント
 
-- [Lambda 開発ガイド](../docs/Lambda/about_lambda.md)
-- [Lambda 構成例](../docs/Lambda/lambda_example.md)
+- [Lambda 開発ガイド](../../docs/Lambda/about_lambda.md)
+- [Lambda 構成例](../../docs/Lambda/lambda_example.md)
 
 ## 🔗 次のステップ
 
-- [Lambda_ApiGW_QR_Generator](../Lambda_ApiGW_QR_Generator/) - API Gateway との連携
-- [S3_APIGW_Lambda_SimpleApp](../S3_APIGW_Lambda_SimpleApp/) - S3 + API Gateway + Lambda
+- [Lambda_ApiGW_QR_Generator](../../projects/Lambda_ApiGW_QR_Generator/) - API Gateway との連携
+- [S3_APIGW_Lambda_SimpleApp](../../projects/S3_APIGW_Lambda_SimpleApp/) - S3 + API Gateway + Lambda

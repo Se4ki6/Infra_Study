@@ -3,7 +3,7 @@
 画像共有など、匿名で読み取り可能な Blob コンテナを持つ Storage Account を構築する学習用リソース（Bicep）。
 
 - 実装: [infra-bicep/](infra-bicep/)
-- 元になった構成案: [main.tf](main.tf)（Terraform 版の下書き）
+- IaC: `infra-bicep/`（このプロジェクトでは Bicep を使用）
 - 解説・Q&A: `docs/blob-publicshere/`（未作成。Q&A が発生したら作成する）
 
 ## 構成（何を作るか）
@@ -45,10 +45,10 @@ tags = { purpose: 'public-assets' }
 
 ## 事前準備
 
-以降のコマンドはすべて **このディレクトリ（`resource-project/blob-publicshere/`）で実行する**（`infra-bicep/...` が相対パスのため）。
+以降のコマンドはすべて **このディレクトリ（`Azure/projects/blob-publicshere/`）で実行する**（`infra-bicep/...` が相対パスのため）。
 
 ```powershell
-cd resource-project/blob-publicshere
+cd Azure/projects/blob-publicshere
 az login
 az account set --subscription "<サブスクリプション名 or ID>"
 ```

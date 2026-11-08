@@ -19,6 +19,8 @@ terraform.rc
 !.env.example
 !.env.*.example
 local.settings.json
+appsettings.Development.json
+appsettings.Local.json
 *.pem
 *.key
 *.p12
@@ -43,3 +45,4 @@ lambda_function_payload.zip
 # Local agent worktrees and generated research cache
 **/.claude/worktrees/
 temp/mslearn_mcp/*
+temp/web/

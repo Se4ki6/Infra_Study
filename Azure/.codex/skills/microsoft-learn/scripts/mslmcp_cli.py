@@ -16,7 +16,7 @@ PowerShell example:
     python .\.codex\skills\microsoft-learn\scripts\mslmcp_cli.py search "Azure Functions timeout"
 
 bash example:
-    python ./.codex/skills/microsoft-learn/scripts/mslmcp_cli.py fetch https://learn.microsoft.com/azure/azure-functions/functions-versions
+    python ./Azure/.codex/skills/microsoft-learn/scripts/mslmcp_cli.py fetch https://learn.microsoft.com/azure/azure-functions/functions-versions
 """
 
 from __future__ import annotations

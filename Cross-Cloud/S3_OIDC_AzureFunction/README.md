@@ -2,7 +2,7 @@
 
 > Azure Function（マネージドID）が、長期のAWS認証情報を一切使わずにS3のファイルをダウンロードする構成（OIDCフェデレーション）
 
-> OIDCフェデレーションの仕組み自体（JWT・信頼ポリシー・v1/v2トークンなど）が初めての場合は、先に [docs/identity/oidc-federation.md](../../docs/identity/oidc-federation.md) を読むと理解しやすい。
+> OIDCフェデレーションの仕組み自体（JWT・信頼ポリシー・v1/v2トークンなど）が初めての場合は、先に [OIDC フェデレーション解説](docs/oidc-federation.md) を読むと理解しやすい。
 
 ## Features
 

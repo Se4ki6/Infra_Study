@@ -1,6 +1,6 @@
 # デプロイ手順
 
-このドキュメントは、`resource-project/bastion-web-todo` を Azure にデプロイする手順をまとめたものです。
+このドキュメントは、`Azure/projects/bastion-web-todo` を Azure にデプロイする手順をまとめたものです。
 
 この手順では実際に Azure リソースを作成します。VM、Public IP、ディスクなどにより課金が発生する可能性があります。学習後は不要なリソースを削除してください。
 
@@ -35,7 +35,7 @@ az account set --subscription "<subscription-id-or-name>"
 リポジトリルートから次のディレクトリへ移動します。
 
 ```powershell
-cd resource-project\bastion-web-todo\infra-bicep
+cd Azure\projects\bastion-web-todo\infra-bicep
 ```
 
 ## 3. SSH 公開鍵を用意する

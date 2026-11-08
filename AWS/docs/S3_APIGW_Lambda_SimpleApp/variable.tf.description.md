@@ -45,7 +45,7 @@ any     # 任意の型
 - この値が設定されていると、`terraform.tfvars`や`-var`オプションで上書きしない限り、この値が使用される
 
 #### 使用箇所
-- [main.tf](../../S3_APIGW_Lambda_SimpleApp/main.tf): プロバイダーのリージョン設定
+- [main.tf](../../projects/S3_APIGW_Lambda_SimpleApp/main.tf): プロバイダーのリージョン設定
   ```terraform
   provider "aws" {
     region = var.aws_region  # ← ここで使用
@@ -186,7 +186,7 @@ variable "aws_profile" {
 - AWS SSOを使用する場合に特に有用
 
 #### 使用箇所
-- [main.tf](../../S3_APIGW_Lambda_SimpleApp/main.tf): プロバイダー設定
+- [main.tf](../../projects/S3_APIGW_Lambda_SimpleApp/main.tf): プロバイダー設定
   ```terraform
   provider "aws" {
     profile = var.aws_profile  # ← ここで使用
@@ -500,7 +500,7 @@ variable "lambda_timeout" { ... }
 - [s3.tf](./s3.tf.description.md): `project_name`を使用してS3バケット名を構築
 - [lambda.tf](./lambda.tf.description.md): `project_name`を使用してLambda関数名を構築
 - [api_gateway.tf](./api_gateway.tf.description.md): `project_name`を使用してAPI名を構築
-- [terraform.tfvars](../../S3_APIGW_Lambda_SimpleApp/terraform.tfvars): 変数の実際の値
+- [プロジェクト README](../../projects/S3_APIGW_Lambda_SimpleApp/README.md): 変数の実際の値
 
 ---
 

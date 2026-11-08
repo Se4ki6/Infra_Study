@@ -120,7 +120,7 @@ STS の `AssumeRole` / `AssumeRoleWithWebIdentity` 自体も無料。**AWS 側�
 ## 3. STEP 1 — Azure を作る
 
 ```powershell
-cd S3_STS_AzureFunction/terraform/azure
+cd Cross-Cloud/S3_STS_AzureFunction/terraform/azure
 cp terraform.tfvars.example terraform.tfvars
 ```
 

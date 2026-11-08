@@ -7,9 +7,9 @@ description: Tavily の検索、抽出、サイトマップ、クロール、Res
 
 ## 前提
 
-- `TAVILY_API_KEY` を環境変数、または `.codex/skills/use-tavily/.env` に設定する。
+- `TAVILY_API_KEY` を環境変数、または `Azure/.codex/skills/use-tavily/.env` に設定する。
 - 依存関係は `pip install tavily-python python-dotenv` を基本にする。既存環境で `tavily` パッケージ名を使っている場合は、その環境に合わせる。
-- スクリプトは `.codex/skills/use-tavily/scripts/` 配下にある。
+- スクリプトは `Azure/.codex/skills/use-tavily/scripts/` 配下にある。
 
 ## 判断フロー
 

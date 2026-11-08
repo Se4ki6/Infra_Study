@@ -1,6 +1,6 @@
 # Bicep 雛形
 
-`.codex/rules/bicep-conventions.md` の規約に沿った最小テンプレ。実装時はここをベースに、**公式 docs で apiVersion とプロパティを確認してから**埋める。
+`Azure/.codex/rules/bicep-conventions.md` の規約に沿った最小テンプレ。実装時はここをベースに、**公式 docs で apiVersion とプロパティを確認してから**埋める。
 
 ## main.bicep（RG 内デプロイ）
 

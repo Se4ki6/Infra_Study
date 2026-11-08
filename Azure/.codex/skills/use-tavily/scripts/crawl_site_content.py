@@ -10,7 +10,7 @@ PowerShell example:
     python .\.codex\skills\use-tavily\scripts\crawl_site_content.py https://learn.microsoft.com/azure/api-management/ --query "workspace feature limitations" --output temp\web\site_crawl_apim_workspace.json
 
 bash example:
-    python ./.codex/skills/use-tavily/scripts/crawl_site_content.py https://learn.microsoft.com/azure/api-management/ --query "workspace feature limitations" --output temp/web/site_crawl_apim_workspace.json
+    python ./Azure/.codex/skills/use-tavily/scripts/crawl_site_content.py https://learn.microsoft.com/azure/api-management/ --query "workspace feature limitations" --output temp/web/site_crawl_apim_workspace.json
 """
 
 from __future__ import annotations

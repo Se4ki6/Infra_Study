@@ -10,7 +10,7 @@ PowerShell example:
     python .\.codex\skills\use-tavily\scripts\map_site_titles.py https://learn.microsoft.com/azure/api-management/ --output temp\web\site_map_apim_docs.json
 
 bash example:
-    python ./.codex/skills/use-tavily/scripts/map_site_titles.py https://learn.microsoft.com/azure/api-management/ --output temp/web/site_map_apim_docs.json
+    python ./Azure/.codex/skills/use-tavily/scripts/map_site_titles.py https://learn.microsoft.com/azure/api-management/ --output temp/web/site_map_apim_docs.json
 """
 
 from __future__ import annotations

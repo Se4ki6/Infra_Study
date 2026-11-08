@@ -189,7 +189,7 @@ https://xxxxxxxxxx.execute-api.ap-northeast-1.amazonaws.com/generate?url=https:/
 - バーストリミット設定（推奨: 100）
 - レートリミット設定（推奨: 50 req/sec）
 
-詳細は [review.md](../docs/Lambda_ApiGW_QR_Generator/review.md) を参照してください。
+詳細は [review.md](../../../docs/Lambda_ApiGW_QR_Generator/review.md) を参照してください。
 
 ---
 
@@ -222,7 +222,7 @@ https://xxxxxxxxxx.execute-api.ap-northeast-1.amazonaws.com/generate?url=https:/
 - [x] curlでの疎通確認用テストスクリプト（test.ps1/test.sh）
 - [x] シェルスクリプトのTerraform側での自動実行
 
-詳細は [todo.md](../docs/Lambda_ApiGW_QR_Generator/todo.md) を参照してください。
+詳細は [todo.md](../../../docs/Lambda_ApiGW_QR_Generator/todo.md) を参照してください。
 
 ---
 
@@ -291,9 +291,9 @@ Lambda_ApiGW_QR_Generator/
 
 ## 📚 参考資料
 
-- [設計ドキュメント](../docs/Lambda_ApiGW_QR_Generator/design.md)
-- [コードレビュー](../docs/Lambda_ApiGW_QR_Generator/review.md)
-- [ToDo](../docs/Lambda_ApiGW_QR_Generator/todo.md)
+- [設計ドキュメント](../../../docs/Lambda_ApiGW_QR_Generator/design.md)
+- [コードレビュー](../../../docs/Lambda_ApiGW_QR_Generator/review.md)
+- [ToDo](../../../docs/Lambda_ApiGW_QR_Generator/todo.md)
 - [AWS Lambda公式ドキュメント](https://docs.aws.amazon.com/lambda/)
 - [API Gateway HTTP API](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html)
 

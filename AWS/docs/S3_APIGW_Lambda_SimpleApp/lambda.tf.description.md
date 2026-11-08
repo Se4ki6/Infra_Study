@@ -500,7 +500,7 @@ resource "aws_lambda_function" "backend" {
 - [api_gateway.tf](./api_gateway.tf.description.md): Lambda関数を呼び出すAPI Gateway
 - [s3.tf](./s3.tf.description.md): APIを利用するフロントエンド
 - [variables.tf](./variable.tf.description.md): プロジェクト名の変数定義
-- [src/lambda/app.py](../../S3_APIGW_Lambda_SimpleApp/src/lambda/app.py): Lambda関数のコード
+- [src/lambda/app.py](../../projects/S3_APIGW_Lambda_SimpleApp/src/lambda/app.py): Lambda関数のコード
 
 ---
 

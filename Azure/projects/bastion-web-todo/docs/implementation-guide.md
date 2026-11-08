@@ -1,6 +1,6 @@
 # Bicep 初心者向け実装解説
 
-このドキュメントは、`resource-project/bastion-web-todo` の Bicep 実装を初めて読む人向けに説明します。
+このドキュメントは、`Azure/projects/bastion-web-todo` の Bicep 実装を初めて読む人向けに説明します。
 
 今回作ったものは、単純な「VM を 2 台立てる」構成ではありません。ポイントは、TODO アプリの HTTP はインターネットに公開しつつ、管理用の SSH は踏み台サーバー経由に絞っていることです。
 
@@ -31,7 +31,7 @@ Web VM
 ## ファイル構成
 
 ```text
-resource-project/bastion-web-todo/
+Azure/projects/bastion-web-todo/
   README.md
   docs/
     implementation-guide.md

@@ -10,7 +10,7 @@ PowerShell example:
     python .\.codex\skills\use-tavily\scripts\search_extract_topic.py "Azure API Management policy expressions limitations" --output temp\web\search_extract_apim_policy_limitations.json
 
 bash example:
-    python ./.codex/skills/use-tavily/scripts/search_extract_topic.py "Azure API Management policy expressions limitations" --output temp/web/search_extract_apim_policy_limitations.json
+    python ./Azure/.codex/skills/use-tavily/scripts/search_extract_topic.py "Azure API Management policy expressions limitations" --output temp/web/search_extract_apim_policy_limitations.json
 """
 
 from __future__ import annotations

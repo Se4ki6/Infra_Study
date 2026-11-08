@@ -17,7 +17,7 @@
 ### 1. Terraform でインフラをデプロイ
 
 ```powershell
-cd C:\Users\sksrd\Programing\AWS\S3
+cd AWS\resources\S3
 
 # 設定の確認
 terraform plan
@@ -39,7 +39,7 @@ terraform output -raw iam_secret_access_key
 ### 3. Python 環境のセットアップ
 
 ```powershell
-cd C:\Users\sksrd\Programing\AWS\S3\scripts
+cd AWS\resources\S3\scripts
 
 # 依存パッケージのインストール（仮想環境が有効な状態で）
 pip install -r requirements.txt
@@ -195,6 +195,6 @@ terraform apply
 
 ## 📚 関連ドキュメント
 
-- [presigned-url-implementation-plan.md](../plan/presigned-url-implementation-plan.md) - 詳細な実装プラン
+- 実装計画: このモノレポには移行されていません。実装手順はこのガイドを参照してください。
 - [presigned-url-automation.md](./presigned-url-automation.md) - 自動化について
 - [terraform-s3-guide.md](./terraform-s3-guide.md) - Terraform S3 ガイド

@@ -1,8 +1,8 @@
 # Bicep 規約（このプロジェクト）
 
 このプロジェクトで Bicep を書く/レビューする全コンポーネント（bicep-orchestrator / bicep-coder / bicep-reviewer）が従う共通規約。
-既存 Terraform 構成（`resources/functions/infra-terraform/`）と同じ思想を Bicep に揃えるための規約。
-元になる Terraform の locals は `resources/functions/infra-terraform/main.tf` を参照。
+既存 Terraform 構成（`Azure/resources/functions/infra-terraform/`）と同じ思想を Bicep に揃えるための規約。
+元になる Terraform の locals は `Azure/resources/functions/infra-terraform/main.tf` を参照。
 
 ## ディレクトリ構成
 

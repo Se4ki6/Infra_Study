@@ -7,7 +7,7 @@
 ```
 docs/
 ├── about_apigateway.md              # API Gateway 概要
-├── Lambda/
+├── Lambda/ (AWS/resources/Lambda の資料)
 │   ├── about_lambda.md              # Lambda 開発ガイド
 │   ├── lambda_example.md            # Terraform での Lambda 構成例
 │   └── memo                         # メモ
@@ -32,6 +32,8 @@ docs/
     ├── s3.tf.description.md
     └── variable.tf.description.md
 ```
+
+実装プロジェクト本体は [Lambda QR Generator](../projects/Lambda_ApiGW_QR_Generator/) と [S3 + API Gateway + Lambda](../projects/S3_APIGW_Lambda_SimpleApp/) にあります。
 
 ## 📖 ドキュメント一覧
 
@@ -64,7 +66,7 @@ docs/
 
 ## 🔗 関連プロジェクト
 
-- [Lambda](../Lambda/) - Lambda 基本構成
-- [CloudFront_Functions](../CloudFront_Functions/) - CloudFront Functions 実装
-- [Lambda_ApiGW_QR_Generator](../Lambda_ApiGW_QR_Generator/) - QRコード生成API
-- [S3_APIGW_Lambda_SimpleApp](../S3_APIGW_Lambda_SimpleApp/) - シンプルなサーバレスアプリ
+- [Lambda](../resources/Lambda/) - Lambda 基本構成
+- [CloudFront_Functions](../resources/CloudFront_Functions/) - CloudFront Functions 実装
+- [Lambda_ApiGW_QR_Generator](../projects/Lambda_ApiGW_QR_Generator/) - QRコード生成API
+- [S3_APIGW_Lambda_SimpleApp](../projects/S3_APIGW_Lambda_SimpleApp/) - シンプルなサーバレスアプリ

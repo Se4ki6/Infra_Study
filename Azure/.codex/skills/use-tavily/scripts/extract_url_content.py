@@ -9,7 +9,7 @@ PowerShell example:
     python .\.codex\skills\use-tavily\scripts\extract_url_content.py https://learn.microsoft.com/azure/api-management/api-management-policies --query "policy capabilities" --output temp\web\extract_apim_policies.json
 
 bash example:
-    python ./.codex/skills/use-tavily/scripts/extract_url_content.py https://learn.microsoft.com/azure/api-management/api-management-policies --query "policy capabilities" --output temp/web/extract_apim_policies.json
+    python ./Azure/.codex/skills/use-tavily/scripts/extract_url_content.py https://learn.microsoft.com/azure/api-management/api-management-policies --query "policy capabilities" --output temp/web/extract_apim_policies.json
 """
 
 from __future__ import annotations

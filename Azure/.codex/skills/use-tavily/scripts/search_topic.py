@@ -9,7 +9,7 @@ PowerShell example:
     python .\.codex\skills\use-tavily\scripts\search_topic.py "Microsoft Fabric overview" --output temp\web\search_fabric_overview.json
 
 bash example:
-    python ./.codex/skills/use-tavily/scripts/search_topic.py "Microsoft Fabric overview" --output temp/web/search_fabric_overview.json
+    python ./Azure/.codex/skills/use-tavily/scripts/search_topic.py "Microsoft Fabric overview" --output temp/web/search_fabric_overview.json
 """
 
 from __future__ import annotations

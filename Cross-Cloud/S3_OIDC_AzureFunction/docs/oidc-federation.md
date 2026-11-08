@@ -1,9 +1,9 @@
 # OIDCフェデレーションとは何か（Azure Function → AWS S3 の例で理解する）
 
 対象読者: OIDC・JWT・STSといった単語を初めて見る人。
-題材: [Cross-Cloud/S3_OIDC_AzureFunction](../../Cross-Cloud/S3_OIDC_AzureFunction/) の実装（Azure FunctionのマネージドIDがAWS S3のファイルをダウンロードする構成）。
+題材: [Cross-Cloud/S3_OIDC_AzureFunction](../) の実装（Azure FunctionのマネージドIDがAWS S3のファイルをダウンロードする構成）。
 
-このドキュメントは「なぜこう作ったか」を理解するための解説。実際の構築手順は [setup-guide.md](../../Cross-Cloud/S3_OIDC_AzureFunction/docs/setup-guide.md) を参照。
+このドキュメントは「なぜこう作ったか」を理解するための解説。実際の構築手順は [setup-guide.md](setup-guide.md) を参照。
 
 ---
 
@@ -119,7 +119,7 @@ flowchart TD
 
 `aud`（宛先）だけを見る設定にしてしまうと、**同じEntra IDテナント内の他のマネージドID**（このプロジェクトとは無関係な別のFunctionやVMなど）でも、たまたま同じ `aud` 宛てのトークンを取得できれば、このロールをAssumeできてしまう。
 
-`sub`（トークンの主体＝マネージドIDのオブジェクトID）まで条件に含めることで、「このマネージドID **だけ**」に絞り込める。これが [terraform/modules/aws/sts_oidc_flow](../../Cross-Cloud/S3_OIDC_AzureFunction/terraform/modules/aws/sts_oidc_flow/main.tf) の信頼ポリシーで `aud` と `sub` の両方を条件にしている理由。
+`sub`（トークンの主体＝マネージドIDのオブジェクトID）まで条件に含めることで、「このマネージドID **だけ**」に絞り込める。これが [terraform/modules/aws/sts_oidc_flow](../terraform/modules/aws/sts_oidc_flow/main.tf) の信頼ポリシーで `aud` と `sub` の両方を条件にしている理由。
 
 ---
 
@@ -133,7 +133,7 @@ Entra IDは同じ仕組みで2種類のフォーマットのトークンを発�
 | `aud`（宛先） | アプリケーションID URI（例: `api://<client-id>`） | クライアントID（GUIDそのもの） |
 | マネージドIDが取得するトークン | 通常こちら（既定） | 明示的に要求した場合 |
 
-このリポジトリのTerraformは既定で `azure_token_version = "v1"` を前提にしている。もし実際のトークンが想定と違う版で発行されていたら、AWS側の `iss`（信頼するOIDC ProviderのURL）と `aud` の形式が食い違い、`InvalidIdentityToken` や `AccessDenied` になる。**必ず `/api/token-claims` で実測してから合わせる**（[setup-guide.md](../../Cross-Cloud/S3_OIDC_AzureFunction/docs/setup-guide.md) の検証手順を参照）。
+このリポジトリのTerraformは既定で `azure_token_version = "v1"` を前提にしている。もし実際のトークンが想定と違う版で発行されていたら、AWS側の `iss`（信頼するOIDC ProviderのURL）と `aud` の形式が食い違い、`InvalidIdentityToken` や `AccessDenied` になる。**必ず `/api/token-claims` で実測してから合わせる**（[setup-guide.md](setup-guide.md) の検証手順を参照）。
 
 ---
 
@@ -148,7 +148,7 @@ Terraformの変数名と、それがJWTのどのclaimと突き合わされるの
 | `azure_oidc_audience` | `aud` | `terraform/azure` の出力 `entra_app_identifier_uri` |
 | `azure_function_principal_id` | `sub` | `terraform/azure` の出力 `function_app_principal_id` |
 
-`terraform/azure` を先にapplyしてこれらの値を得てから `terraform/aws` をapplyする、という手順（[README.md](../../Cross-Cloud/S3_OIDC_AzureFunction/README.md) の3段階apply）は、この対応表を埋めるために必要な情報がAzure側にしか存在しないから。
+`terraform/azure` を先にapplyしてこれらの値を得てから `terraform/aws` をapplyする、という手順（[README.md](../README.md) の3段階apply）は、この対応表を埋めるために必要な情報がAzure側にしか存在しないから。
 
 ---
 

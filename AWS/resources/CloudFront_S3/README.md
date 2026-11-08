@@ -33,8 +33,7 @@ CloudFront_S3/
 ├── providers.tf         # プロバイダー設定
 ├── variables.tf         # 変数定義
 ├── outputs.tf           # 出力定義
-├── terraform.tfvars     # 変数値
-├── _terraform.tfvars    # テンプレート
+├── terraform.tfvars     # ローカルで作成（Git 対象外）
 ├── docs/                # ドキュメント
 │   └── cloudfront-beginner-guide.md
 ├── state/               # Terraform 状態ファイル
@@ -84,8 +83,8 @@ terraform destroy
 ## 📖 関連ドキュメント
 
 - [CloudFront 初心者ガイド](docs/cloudfront-beginner-guide.md)
-- [CloudFront Functions 解説](../docs/cloudfront/about_CloudFront_Functions.md)
-- [CloudFront vs S3 比較](../docs/cloudfront/difference_between_CloudFront_S3.md)
+- [CloudFront Functions 解説](../../docs/cloudfront/about_CloudFront_Functions.md)
+- [CloudFront vs S3 比較](../../docs/cloudfront/difference_between_CloudFront_S3.md)
 
 ## 🔗 関連プロジェクト
 

@@ -11,9 +11,9 @@ Codex では Claude の subagent 定義を前提にせず、メインの Codex �
 ## 必ず読む
 
 1. `AGENTS.md`
-2. `.codex/rules/bicep-conventions.md`
-3. `.codex/rules/bicep-templates.md`
-4. 既存 Terraform と揃える場合は `resources/functions/infra-terraform/`
+2. `Azure/.codex/rules/bicep-conventions.md`
+3. `Azure/.codex/rules/bicep-templates.md`
+4. 既存 Terraform と揃える場合は `Azure/resources/functions/infra-terraform/`
 5. Azure リソース種別と apiVersion は `microsoft-learn` スキル、または公式 `https://learn.microsoft.com/azure/templates/` で確認する
 
 ## 進め方
@@ -35,7 +35,7 @@ Codex では Claude の subagent 定義を前提にせず、メインの Codex �
 <何を・なぜ作るか>
 
 ## 対象ディレクトリ
-<例: resources/functions/infra-bicep/>
+<例: Azure/resources/functions/infra-bicep/>
 
 ## リソース一覧
 | リソース | 種別 (Microsoft.*) | apiVersion | 役割 |
@@ -62,7 +62,7 @@ Codex では Claude の subagent 定義を前提にせず、メインの Codex �
 
 ## 実装ルール
 
-- `.codex/rules/bicep-conventions.md` に従う。
+- `Azure/.codex/rules/bicep-conventions.md` に従う。
 - 各リソース定義の直前に日本語 1 行コメントを書く。
 - アクセスキー、接続文字列、secure 値を output に出さない。
 - apiVersion は記憶で断定せず、公式情報で確認する。

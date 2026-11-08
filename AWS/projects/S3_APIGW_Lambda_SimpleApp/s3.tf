@@ -50,7 +50,7 @@ resource "aws_s3_object" "index_html" {
   source       = "${path.module}/src/frontend/index.html"
   content_type = "text/html"
   # filemd5ハッシュを計算してファイルの整合性を検証
-  etag         = filemd5("${path.module}/src/frontend/index.html")
+  etag = filemd5("${path.module}/src/frontend/index.html")
 }
 
 resource "aws_s3_object" "error_html" {
@@ -59,5 +59,5 @@ resource "aws_s3_object" "error_html" {
   source       = "${path.module}/src/frontend/error.html"
   content_type = "text/html"
   # filemd5ハッシュを計算してファイルの整合性を検証
-  etag         = filemd5("${path.module}/src/frontend/error.html")
+  etag = filemd5("${path.module}/src/frontend/error.html")
 }

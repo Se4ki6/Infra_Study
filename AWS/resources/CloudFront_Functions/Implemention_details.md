@@ -1,6 +1,6 @@
 # CloudFront Functions URL Rewrite Implementation Guide
 
-`docs\cloudfront\about_CloudFront_Functions.md` に記載されている「URL 書き換え（index.html の補完）」を再現するための手順です。
+`../../docs/cloudfront/about_CloudFront_Functions.md` に記載されている「URL 書き換え（index.html の補完）」を再現するための手順です。
 
 ## 手順の概要
 
@@ -17,7 +17,7 @@
 
 まず、URL 書き換えロジックを含む JavaScript ファイルを作成します。
 
-`CloudFront_Functions/function.js` というファイルを新規作成し、以下の内容を記述します。
+`function.js` というファイルを新規作成し、以下の内容を記述します。
 
 ```javascript
 function handler(event) {
@@ -39,7 +39,7 @@ function handler(event) {
 
 ### 2. Terraform コードの修正 (`main.tf`)
 
-`CloudFront_Functions/main.tf` を編集し、CloudFront Function のリソース定義と、既存の CloudFront ディストリビューションへの紐付けを追加します。
+`main.tf` を編集し、CloudFront Function のリソース定義と、既存の CloudFront ディストリビューションへの紐付けを追加します。
 
 **追加するリソース:**
 
@@ -70,10 +70,10 @@ resource "aws_cloudfront_function" "rewrite_url" {
 
 ### 3. デプロイ
 
-ターミナルで `CloudFront_Functions` ディレクトリに移動し、Terraform コマンドを実行します。
+ターミナルで `AWS/resources/CloudFront_Functions` ディレクトリに移動し、Terraform コマンドを実行します。
 
 ```powershell
-cd CloudFront_Functions
+cd AWS/resources/CloudFront_Functions
 terraform init  # 初回のみ、またはプロバイダ変更時
 terraform apply
 ```

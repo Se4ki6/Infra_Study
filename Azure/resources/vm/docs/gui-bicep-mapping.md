@@ -3,7 +3,7 @@
 デプロイ済みの `rg-vm-dev`（sekishiro-learn / japaneast）を題材に、
 **Azureポータルのどの画面のどの項目を、Bicepのどこで設定しているか**を1リソースずつ対応させる。
 
-- 対象Bicep: [`resource-learn/vm/infra-bicep/`](../infra-bicep/)
+- 対象Bicep: [`Azure/resources/vm/infra-bicep/`](../infra-bicep/)
   - [main.bicep](../infra-bicep/main.bicep) … オーケストレーション（RG作成 + module呼び出し）
   - [modules/network.bicep](../infra-bicep/modules/network.bicep) … VNet / Subnet / NSG / Public IP / NIC
   - [modules/virtual_machine.bicep](../infra-bicep/modules/virtual_machine.bicep) … VM本体 / OSディスク

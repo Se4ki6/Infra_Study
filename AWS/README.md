@@ -6,15 +6,17 @@
 
 | フォルダ                                                | 説明                                                            |
 | ------------------------------------------------------- | --------------------------------------------------------------- |
-| [S3](S3/)                                               | S3バケットの作成、静的ウェブサイトホスティング、署名付きURL生成 |
-| [CloudFront_S3](CloudFront_S3/)                         | CloudFront + S3 による静的コンテンツ配信（WAF付き）             |
-| [CloudFront_test](CloudFront_test/)                     | CloudFront + S3 最小構成（学習用）                              |
-| [CloudFront_Functions](CloudFront_Functions/)           | CloudFront Functions によるURL書き換え                          |
-| [Lambda](Lambda/)                                       | AWS Lambda の基本構成                                           |
-| [Lambda_ApiGW_QR_Generator](Lambda_ApiGW_QR_Generator/) | API Gateway + Lambda による QRコード生成                        |
-| [S3_APIGW_Lambda_SimpleApp](S3_APIGW_Lambda_SimpleApp/) | S3 + API Gateway + Lambda のシンプルなアプリケーション          |
-| [S3_STS_AzureFunction](S3_STS_AzureFunction/)           | S3 へのアクセスを AWS STS 経由のみに限定（Azure Functions から） |
-| [docs](docs/)                                           | 共通ドキュメント（Lambda、CloudFront Functions の解説）         |
+| [S3](resources/S3/)                                               | S3バケットの作成、静的ウェブサイトホスティング、署名付きURL生成 |
+| [CloudFront_S3](resources/CloudFront_S3/)                         | CloudFront + S3 による静的コンテンツ配信（WAF付き）             |
+| [CloudFront_test](resources/CloudFront_test/)                     | CloudFront + S3 最小構成（学習用）                              |
+| [CloudFront_Functions](resources/CloudFront_Functions/)           | CloudFront Functions によるURL書き換え                          |
+| [Lambda](resources/Lambda/)                                       | AWS Lambda の基本構成                                           |
+| [Lambda_ApiGW_QR_Generator](projects/Lambda_ApiGW_QR_Generator/) | API Gateway + Lambda による QRコード生成                        |
+| [S3_APIGW_Lambda_SimpleApp](projects/S3_APIGW_Lambda_SimpleApp/) | S3 + API Gateway + Lambda のシンプルなアプリケーション          |
+| [Amplify](resources/Amplify/Host_Github_Repository/) | GitHub リポジトリをホストする AWS Amplify の Terraform 構成 |
+| [S3_STS_AzureFunction](../Cross-Cloud/S3_STS_AzureFunction/)           | S3 へのアクセスを AWS STS 経由のみに限定（Azure Functions から） |
+| [AWS Blocks](projects/aws-blocks/)                      | AWS Blocks を使った TODO・じゃんけんアプリ                         |
+| [docs](docs/)                                           | AWS の学習資料（Lambda、CloudFront Functions など）                |
 
 ## 🏗️ アーキテクチャ
 
@@ -66,17 +68,17 @@ terraform destroy
 
 ## 📖 学習パス
 
-1. **初級**: [S3](S3/) - S3バケットの基本操作
-2. **中級**: [CloudFront_test](CloudFront_test/) - CloudFront + S3 最小構成
-3. **中級**: [CloudFront_Functions](CloudFront_Functions/) - エッジでのURL処理
-4. **上級**: [CloudFront_S3](CloudFront_S3/) - WAF付き本格構成
-5. **応用**: [Lambda_ApiGW_QR_Generator](Lambda_ApiGW_QR_Generator/) - サーバレスAPI
+1. **初級**: [S3](resources/S3/) - S3バケットの基本操作
+2. **中級**: [CloudFront_test](resources/CloudFront_test/) - CloudFront + S3 最小構成
+3. **中級**: [CloudFront_Functions](resources/CloudFront_Functions/) - エッジでのURL処理
+4. **上級**: [CloudFront_S3](resources/CloudFront_S3/) - WAF付き本格構成
+5. **応用**: [Lambda_ApiGW_QR_Generator](projects/Lambda_ApiGW_QR_Generator/) - サーバレスAPI
 
 ## 📁 ドキュメント
 
 - [Lambda 開発ガイド](docs/Lambda/about_lambda.md)
 - [CloudFront Functions 解説](docs/cloudfront/about_CloudFront_Functions.md)
-- [CloudFront 初心者ガイド](CloudFront_S3/docs/cloudfront-beginner-guide.md)
+- [CloudFront 初心者ガイド](resources/CloudFront_S3/docs/cloudfront-beginner-guide.md)
 
 ## ⚠️ セキュリティ注意事項
 

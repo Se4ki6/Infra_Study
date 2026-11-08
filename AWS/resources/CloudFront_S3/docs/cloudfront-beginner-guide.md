@@ -993,7 +993,7 @@ aws cloudwatch get-metric-statistics \
 
 - `cloudfront.tf` - CloudFront の Terraform 設定
 - `waf.tf` - AWS WAF の設定
-- `S3/docs/cache-control-strategies.md` - キャッシュ戦略の詳細
+- `../../S3/docs/cache-control-strategies.md` - キャッシュ戦略の詳細
 
 ---
 

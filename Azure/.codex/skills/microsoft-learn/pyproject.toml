@@ -3,10 +3,10 @@
 # Install once (from this directory or the repo root) so the short `mslmcp`
 # command lands on PATH, the same way the use-tavily skill installs `tav`:
 #
-#     pip install -e .codex/skills/microsoft-learn
+#     pip install -e Azure/.codex/skills/microsoft-learn
 #
 # Without installing, the script still runs directly via
-# `python .codex/skills/microsoft-learn/scripts/mslmcp_cli.py ...`.
+# `python Azure/.codex/skills/microsoft-learn/scripts/mslmcp_cli.py ...`.
 
 [build-system]
 requires = ["setuptools>=61"]

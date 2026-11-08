@@ -394,7 +394,7 @@ terraform.tfstate*  # 状態ファイル（リモートバックエンド使用�
 
 - [variables.tf](./variable.tf.description.md): このファイルで参照される変数の定義
 - [outputs.tf](./outputs.tf.description.md): デプロイ後の出力値
-- [terraform.tfvars](../../S3_APIGW_Lambda_SimpleApp/terraform.tfvars): 変数の実際の値
+- [プロジェクト README](../../projects/S3_APIGW_Lambda_SimpleApp/README.md): 変数の実際の値
 
 ---
 

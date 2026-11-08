@@ -30,7 +30,7 @@ CloudFrontを使ってS3の静的コンテンツを配信する**最小限の構
 
 ### 1. バケット名を設定
 
-[terraform.tfvars](terraform.tfvars) を編集して、グローバルで一意なバケット名を設定してください。
+`terraform.tfvars`（ローカルで作成し、Git には追加しない） を編集して、グローバルで一意なバケット名を設定してください。
 
 ```hcl
 bucket_name = "my-cloudfront-minimal-test-bucket-20251213"
