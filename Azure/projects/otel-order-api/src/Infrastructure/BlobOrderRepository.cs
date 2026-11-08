@@ -25,7 +25,7 @@ public sealed class BlobOrderRepository(BlobContainerClient container) : IOrderR
             var stored = new StoredOrder(order.Id, order.ProductId, order.Quantity, order.CreatedAt);
             await blob.UploadAsync(BinaryData.FromObjectAsJson(stored, JsonOptions), cancellationToken);
         }
-        catch (Azure.RequestFailedException exception)
+        catch (Exception exception) when (IsStorageFailure(exception))
         {
             // Azure固有例外をアプリケーション共通の例外に包み、上位層へ漏らさないようにします。
             throw new OrderStorageException("Could not save the order to Blob Storage.", exception);
@@ -53,11 +53,18 @@ public sealed class BlobOrderRepository(BlobContainerClient container) : IOrderR
             // 404は通常の「注文なし」として扱い、障害ログや503にはしません。
             return null;
         }
-        catch (Azure.RequestFailedException exception)
+        catch (Exception exception) when (IsStorageFailure(exception))
         {
             throw new OrderStorageException("Could not retrieve the order from Blob Storage.", exception);
         }
     }
+
+    // Azure SDKは再試行がすべて失敗すると、各回の例外をAggregateExceptionにまとめます。
+    private static bool IsStorageFailure(Exception exception) =>
+        exception is Azure.RequestFailedException ||
+        exception is AggregateException aggregate &&
+        aggregate.Flatten().InnerExceptions is { Count: > 0 } failures &&
+        failures.All(failure => failure is Azure.RequestFailedException);
 
     private sealed record StoredOrder(Guid Id, string ProductId, int Quantity, DateTimeOffset CreatedAt);
 }

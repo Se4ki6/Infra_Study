@@ -7,7 +7,7 @@
 OpenTelemetry（OTel）は、アプリケーションの動作を計測するための共通のAPIとSDKです。このサンプルでは、計測したデータを次のいずれかへ送ります。
 
 - `APPLICATIONINSIGHTS_CONNECTION_STRING`を設定した場合: Azure Monitor OpenTelemetry DistroがテレメトリをApplication Insightsへ送ります。
-- 接続文字列がなく`OTEL_EXPORTER_OTLP_ENDPOINT`を設定した場合: OTLP ExporterがAspire Dashboardなどへ送ります。`make dev`はこの設定を自動で渡します。
+- 接続文字列がなく`OTEL_EXPORTER_OTLP_ENDPOINT`を設定した場合: OTLP ExporterがAspire Dashboardなどへ送ります。`make dev`では`src/Api/appsettings.Development.json`からこの設定を読み込みます。
 - 両方未設定の場合: Console Exporterがトレース・メトリクス・ログをターミナルに出します。
 
 計測（instrumentation）と送信先（exporter）は別の役割です。たとえば注文処理のコードがActivityやログ、メトリクスを記録し、ExporterがそれをコンソールやApplication Insightsへ運びます。

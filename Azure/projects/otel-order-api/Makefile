@@ -1,5 +1,4 @@
 PORT ?= 5080
-OTLP_ENDPOINT ?= http://localhost:4317
 RUN_PID_FILE := .otel-order-api.pid
 API_PROJECT := src/Api/OtelOrderApi.Api.csproj
 
@@ -13,7 +12,7 @@ dev:
 		if [ -n "$$login_url" ]; then printf 'Aspire Dashboard login URL: %s\n' "$$login_url"; break; fi; \
 		attempt=$$((attempt + 1)); sleep 1; \
 	done
-	OTEL_EXPORTER_OTLP_ENDPOINT=$(OTLP_ENDPOINT) OTEL_EXPORTER_OTLP_PROTOCOL=grpc OTEL_SERVICE_NAME=otel-order-api bash scripts/run-api.sh dotnet run --project $(API_PROJECT) --urls http://localhost:$(PORT)
+	ASPNETCORE_ENVIRONMENT=Development OTEL_SERVICE_NAME=otel-order-api $(if $(OTLP_ENDPOINT),OTEL_EXPORTER_OTLP_ENDPOINT=$(OTLP_ENDPOINT)) bash scripts/run-api.sh dotnet run --project $(API_PROJECT) --urls http://localhost:$(PORT)
 
 api:
 	bash scripts/run-api.sh dotnet run --project $(API_PROJECT) --urls http://localhost:$(PORT)
