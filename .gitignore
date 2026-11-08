@@ -1,1 +1,45 @@
+# Terraform state, plans, and local configuration
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfplan.*
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+.terraformrc
+terraform.rc
+.azure/
+.aws/
+
+# Credentials and local settings
+.env
+.env.*
+!.env.example
+!.env.*.example
+local.settings.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.crt
+
+# Language and build outputs
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+node_modules/
+cdk.out/
+build-temp/
+dist/
+.hosting/
+.bb-data/
+.blocks-sandbox/
+lambda_function_payload.zip
+
+# Local agent worktrees and generated research cache
+**/.claude/worktrees/
 temp/mslearn_mcp/*
