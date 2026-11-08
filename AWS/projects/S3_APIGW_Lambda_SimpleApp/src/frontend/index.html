@@ -1,0 +1,41 @@
+<!-- <!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serverless Demo</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        #result { margin-top: 20px; color: #333; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Serverless App</h1>
+    <button onclick="callApi()">APIを呼び出す</button>
+    <div id="result"></div>
+
+    <script>
+        // Terraform outputの api_endpoint をここに貼り付け
+        const API_URL = "YOUR_API_GATEWAY_URL/dev/hello";
+
+        async function callApi() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerText = "Loading...";
+
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                resultDiv.innerText = "Response: " + data.message;
+                console.log(data);
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerText = "Error: " + error.message;
+            }
+        }
+    </script>
+</body>
+</html> -->
