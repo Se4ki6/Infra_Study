@@ -1,0 +1,39 @@
+// ==============================================================================
+// terraform/azure 用の変数値サンプル
+// 使い方: cp terraform.tfvars.example terraform.tfvars して値を埋める
+// ==============================================================================
+
+// 空なら az login の既定サブスクリプション / テナントを使う
+azure_subscription_id = ""
+azure_tenant_id       = ""
+
+location    = "japaneast"
+environment = "dev"
+name_prefix = "s3sts"
+
+// Y1 (Consumption) はサブスクリプションによって "Total VMs" クォータが 0 で
+// 作成できないことがある (新規 PayAsYouGo で起きやすい)。詰まったら "B1" に変更する
+function_app_sku_name = "Y1"
+
+// マネージドID が返すトークンのバージョンに合わせる。
+// まず 1 で作り、/api/token-claims の iss を見て必要なら 2 に変えて apply し直す。
+entra_requested_token_version = 1
+
+// ------------------------------------------------------------------------------
+// 【STEP 1 では以下すべて空のままで OK】
+// terraform/aws を apply したあと、その出力値を埋めて再度 apply する。
+// ------------------------------------------------------------------------------
+aws_region    = "ap-southeast-2"
+aws_s3_bucket = "" // aws の出力 bucket_name
+aws_s3_prefix = "shared"
+
+default_credential_mode = "oidc"
+
+// 方式A
+aws_assume_role_arn             = "" // aws の出力 assume_role_arn
+aws_bootstrap_access_key_id     = "" // aws の出力 bootstrap_access_key_id
+aws_bootstrap_secret_access_key = "" // aws の出力 bootstrap_secret_access_key
+aws_external_id                 = "" // aws の tfvars に設定した external_id と同じ値
+
+// 方式B
+aws_web_identity_role_arn = "" // aws の出力 web_identity_role_arn

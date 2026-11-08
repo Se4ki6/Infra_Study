@@ -1,0 +1,4 @@
+{
+  "message": "downloaded via AWS STS",
+  "source": "S3_STS_AzureFunction"
+}

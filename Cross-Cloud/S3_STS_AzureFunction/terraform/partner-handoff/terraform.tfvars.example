@@ -1,0 +1,32 @@
+// ==============================================================================
+// 変数値サンプル
+// 使い方: cp terraform.tfvars.example terraform.tfvars して値を埋める
+// (*.tfvars はリポジトリの .gitignore で除外されている。Notion 等で共有する際も
+//  このファイルではなく "terraform.tfvars.example" (値未記入) の方だけを渡すこと)
+// ==============================================================================
+
+aws_region  = "ap-northeast-1"
+aws_profile = "CHANGE_ME_your_aws_profile"
+environment = "prod"
+name_prefix = "batch-s3-access"
+
+// グローバルに一意なバケット名にすること
+bucket_name = "CHANGE_ME-partner-batch-data"
+
+// 連携先 (バッチ) に読み取りを許可するプレフィックス。最小権限の観点から必要な範囲に絞る
+allowed_prefix = "shared"
+
+// AssumeRole の合言葉。必ずここで生成した値に置き換え、連携先には Key Vault 等の
+// 安全な経路で共有する (Slack・メール・チケットへの平文貼り付けは避ける)。
+//   生成例 (PowerShell): -join ((1..32) | % { '{0:x}' -f (Get-Random -Max 16) })
+external_id = "CHANGE_ME_random_hex_string_16chars_or_more"
+
+// バケットロックダウン (この構成の中核。原則 true のまま運用する)
+enable_bucket_lockdown = true
+
+// 自社の別プロファイルや CI からも触りたい場合はここに aws:userId を追加
+//   確認: aws sts get-caller-identity --query UserId --output text --profile <profile>
+additional_allowed_user_ids = []
+
+// 連携先に発行する一時クレデンシャルの最大有効期間 (秒)
+session_duration_seconds = 3600

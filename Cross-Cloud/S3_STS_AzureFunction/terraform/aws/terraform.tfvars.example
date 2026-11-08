@@ -1,0 +1,45 @@
+// ==============================================================================
+// terraform/aws 用の変数値サンプル
+// 使い方: cp terraform.tfvars.example terraform.tfvars して値を埋める
+// (*.tfvars はリポジトリの .gitignore で除外されている)
+// ==============================================================================
+
+aws_region  = "ap-southeast-2"
+aws_profile = "AdministratorAccess-339126664118"
+environment = "dev"
+
+// グローバルに一意なバケット名にすること
+bucket_name = "s3-sts-azure-demo-20260822"
+
+// STS ロールに読み取りを許可するプレフィックス
+allowed_prefix = "shared"
+
+// ------------------------------------------------------------------------------
+// 方式A: アクセスキー + AssumeRole
+// ------------------------------------------------------------------------------
+enable_access_key_flow = true
+
+// AssumeRole の合言葉。必ず自分で生成した値に置き換える
+//   生成例 (PowerShell): -join ((1..32) | % { '{0:x}' -f (Get-Random -Max 16) })
+external_id = "CHANGE_ME_random_hex_string"
+
+// ------------------------------------------------------------------------------
+// 方式B: OIDC + AssumeRoleWithWebIdentity
+// ------------------------------------------------------------------------------
+// 【注意】以下 3 つは terraform/azure を先に apply して出力値をコピーする。
+//        初回は enable_oidc_flow = false で apply し、Azure 構築後に true にするのが楽。
+enable_oidc_flow = false
+
+azure_tenant_id     = ""  // terraform/azure の出力 azure_tenant_id
+azure_token_version = "v1" // /api/token-claims で実測した iss に合わせる (v1 or v2)
+azure_oidc_audience = ""  // v1 なら aws_oidc_audience_v1、v2 なら aws_oidc_audience_v2
+azure_function_principal_id = ""  // terraform/azure の出力 function_principal_id
+
+// ------------------------------------------------------------------------------
+// バケットロックダウン
+// ------------------------------------------------------------------------------
+enable_bucket_lockdown = true
+
+// 自分の CI や別プロファイルからも触りたい場合はここに aws:userId を追加
+//   確認: aws sts get-caller-identity --query UserId --output text --profile <profile>
+additional_allowed_user_ids = []

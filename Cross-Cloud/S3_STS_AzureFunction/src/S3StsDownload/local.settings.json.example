@@ -1,0 +1,22 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+
+    "AWS_REGION": "ap-southeast-2",
+    "AWS_S3_BUCKET": "s3-sts-azure-demo-20260822",
+    "AWS_S3_PREFIX": "shared",
+
+    "CREDENTIAL_MODE": "accesskey",
+    "AWS_STS_SESSION_DURATION_SECONDS": "900",
+
+    "AWS_ASSUME_ROLE_ARN": "arn:aws:iam::339126664118:role/s3-sts-azure-s3-access-assumerole",
+    "BOOTSTRAP_AWS_ACCESS_KEY_ID": "AKIA...",
+    "BOOTSTRAP_AWS_SECRET_ACCESS_KEY": "...",
+    "AWS_EXTERNAL_ID": "...",
+
+    "AWS_WEB_IDENTITY_ROLE_ARN": "arn:aws:iam::339126664118:role/s3-sts-azure-s3-access-oidc",
+    "AZURE_TOKEN_SCOPE": "api://00000000-0000-0000-0000-000000000000/.default"
+  }
+}

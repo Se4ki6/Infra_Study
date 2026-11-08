@@ -1,0 +1,48 @@
+// ==============================================================================
+// 会社アカウントで「AssumeRoleのみ」を検証するための変数値サンプル
+// ==============================================================================
+// Azure 連携（方式B / OIDC）は使わず、方式A（アクセスキー + sts:AssumeRole）と
+// バケットロックダウンだけを会社の AWS アカウントに構築して検証する用途。
+//
+// 使い方:
+//   1. このファイルを cp terraform.tfvars.company.example terraform.tfvars.company として値を埋める
+//   2. 【重要】個人アカウント用の state と絶対に混在させない。
+//      terraform workspace new company などで state を分離してから apply する。
+//      詳細手順は ../../docs/company-account-testing.md を参照。
+//
+// (*.tfvars* はリポジトリの .gitignore で除外されている)
+// ==============================================================================
+
+aws_region  = "ap-northeast-1"              // 会社アカウントで使うリージョンに変更
+aws_profile = "CHANGE_ME_company_profile"   // aws configure / aws sso で設定した会社アカウント用プロファイル名
+environment = "sandbox"
+name_prefix = "s3-sts-test"
+
+// グローバルに一意なバケット名にすること（既存のS3バケット名と衝突しないように）
+bucket_name = "CHANGE_ME-s3-sts-lockdown-test-20260903"
+
+// STS ロールに読み取りを許可するプレフィックス
+allowed_prefix = "shared"
+
+// ------------------------------------------------------------------------------
+// 方式A: アクセスキー + AssumeRole（これだけを検証する）
+// ------------------------------------------------------------------------------
+enable_access_key_flow = true
+
+// AssumeRole の合言葉。必ず自分で生成した値に置き換える
+//   生成例 (PowerShell): -join ((1..32) | % { '{0:x}' -f (Get-Random -Max 16) })
+external_id = "CHANGE_ME_random_hex_string"
+
+// ------------------------------------------------------------------------------
+// 方式B: OIDC + AssumeRoleWithWebIdentity（今回は使わない）
+// ------------------------------------------------------------------------------
+enable_oidc_flow = false
+
+// ------------------------------------------------------------------------------
+// バケットロックダウン（これが検証したい制限そのもの）
+// ------------------------------------------------------------------------------
+enable_bucket_lockdown = true
+
+// 会社の管理者プロファイルなど、別の principal からも触って確認したい場合はここに追加
+//   確認: aws sts get-caller-identity --query UserId --output text --profile <profile>
+additional_allowed_user_ids = []
