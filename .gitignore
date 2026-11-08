@@ -1,1 +1,4 @@
 temp/mslearn_mcp/*
+# .NET build output
+**/bin/
+**/obj/
